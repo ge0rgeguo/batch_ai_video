@@ -35,6 +35,16 @@ warn() { echo -e "\033[1;33m[$(date +%H:%M:%S)] $*\033[0m"; }
 err() { echo -e "\033[1;31m[$(date +%H:%M:%S)] $*\033[0m"; }
 
 log "1) 安装系统依赖 (git, nginx, python, ufw, fail2ban)"
+# 检测并配置阿里云 apt 镜像源（如果尚未配置）
+if ! grep -q "mirrors.aliyun.com" /etc/apt/sources.list 2>/dev/null; then
+  log "检测到未使用阿里云镜像源，正在配置..."
+  if [[ -f /etc/apt/sources.list ]]; then
+    cp /etc/apt/sources.list /etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S)
+    sed -i 's|http://.*archive.ubuntu.com|http://mirrors.aliyun.com|g; s|http://.*security.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
+    sed -i 's|http://.*mirrors.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
+    log "已配置阿里云 apt 镜像源"
+  fi
+fi
 apt-get update -y
 DEBIAN_FRONTEND=noninteractive apt-get install -y git nginx python3-venv python3-pip ufw fail2ban
 
@@ -64,8 +74,8 @@ sudo -iu "${APP_USER}" bash -lc "\
   cd '${APP_DIR}' && \
   python3 -m venv venv && \
   source venv/bin/activate && \
-  pip install --upgrade pip && \
-  pip install -r requirements.txt"
+  pip install --upgrade pip -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com && \
+  pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com"
 
 log "6) 生成或设置生产环境变量文件"
 read -r -s -p "请输入平台级 YUNWU_API_KEY（输入不可见）：" YW_KEY || true; echo

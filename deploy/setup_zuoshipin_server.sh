@@ -91,9 +91,9 @@ print(base64.urlsafe_b64encode(os.urandom(32)).decode())
 PY
 )
 
-sudo -iu "${APP_USER}" bash -lc "\
-  mkdir -p '${ENV_DIR}' && \
-  cat > '${ENV_FILE}' <<EOF
+# 创建临时 env 文件，然后复制到目标位置
+TMP_ENV=$(mktemp)
+cat > "${TMP_ENV}" <<EOF
 PUBLIC_BASE_URL=https://${DOMAIN}
 YUNWU_API_KEY=${YW_KEY}
 CRYPTO_SECRET=${CRYPTO_SECRET}
@@ -101,7 +101,12 @@ DISABLE_BACKGROUND=false
 HOST=127.0.0.1
 PORT=8888
 EOF
+
+sudo -iu "${APP_USER}" bash -c "\
+  mkdir -p '${ENV_DIR}' && \
+  cp '${TMP_ENV}' '${ENV_FILE}' && \
   chmod 600 '${ENV_FILE}'"
+rm -f "${TMP_ENV}"
 
 log "7) 初始化数据库（若首次）"
 sudo -iu "${APP_USER}" bash -lc "\

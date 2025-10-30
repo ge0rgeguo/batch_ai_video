@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads and temporary files
+uploads/
+public/temp-results/*.mp4
+public/temp-audio/
+public/temp-video/
+tmp/
+temp/
+
+# Logs
+*.log
+logs/
+
+# Virtual environments
+colab_website_venv/
+
+# 旧的文档和notebook（已删除）
+COLAB_API_KEY_FIX.md
+COLAB_MVP_DEPLOYMENT_GUIDE.md
+COLAB_NOTEBOOK_README.md
+COLAB_SIMPLE_README.md
+COLAB_USER_ISOLATION_GUIDE.md
+DEBUG_TEST.md
+LOCAL_RUN_GUIDE.md
+MVP_QUICK_START.md
+NGROK_SETUP_GUIDE.md
+PROJECT_DELIVERY_SUMMARY.md
+PROJECT_RESTORED.md
+SIMPLIFIED_VERSION_GUIDE.md
+USER_ISOLATION_COMPLETED.md
+ai_batch_generation_design_doc
+colab_videogen_mvp.ipynb
+colab_videogen_simple.ipynb
+colab_webapp.ipynb
+colab_app_core.py
+VIDEOGEN_AI_SIMPLE.py
+convert_to_notebook.py
+RESTORE_FILES.py
+restore_project.sh
+app.db.backup_before_credits
+*.json
+!package.json
+!package-lock.json

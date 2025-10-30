@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+passlib[bcrypt]
+cryptography
+pillow
+zipstream-new
+pyngrok
+nest_asyncio
+requests
+

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI视频批量生成</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; color: #333; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    /* 登录页面 - 纵向布局 */
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+    .login-card { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 48px; width: 100%; max-width: 420px; }
+    .login-card h1 { font-size: 28px; margin-bottom: 32px; text-align: center; color: #667eea; }
+    .login-card .form-group { margin-bottom: 24px; display: flex; flex-direction: column; }
+    .login-card label { font-weight: 600; margin-bottom: 8px; color: #555; }
+    .login-card input { padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: all 0.3s; }
+    .login-card input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    .login-card button { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-top: 8px; }
+    .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4); }
+    .login-card .error-msg { color: #e53e3e; font-size: 14px; margin-top: 16px; text-align: center; padding: 12px; background: #fff5f5; border-radius: 6px; display: none; }
+    
+    header { background: white; border-radius: 16px; padding: 24px 32px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 28px; color: #667eea; }
+    header .user-info { display: flex; align-items: center; gap: 16px; }
+    header button { padding: 10px 20px; border: none; background: #667eea; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    header button:hover { background: #5568d3; transform: translateY(-1px); }
+    
+    .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .card h3 { font-size: 18px; margin-bottom: 16px; color: #667eea; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+    
+    /* Prompt文本框 - 可自适应垂直调整 */
+    textarea#prompt { width: 100%; min-height: 120px; max-height: 400px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; }
+    textarea#prompt:focus { outline: none; border-color: #667eea; }
+    
+    .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #555; }
+    input, select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #667eea; }
+    
+    button { padding: 12px 24px; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.3s; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+    button.secondary { background: #718096; }
+    button.secondary:hover { background: #4a5568; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    thead { background: #f7fafc; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { font-weight: 600; color: #667eea; }
+    
+    .status-pending, .status-queued { color: #ed8936; font-weight: 600; }
+    .status-running { color: #3182ce; font-weight: 600; }
+    .status-completed { color: #38a169; font-weight: 600; }
+    .status-failed { color: #e53e3e; font-weight: 600; }
+    .status-cancelled { color: #718096; font-weight: 600; }
+    
+    .action-btn { padding: 6px 12px; font-size: 13px; margin-right: 6px; }
+    
+    .hidden { display: none !important; }
+    
+    #thumb { margin-top: 12px; border: 2px solid #e0e0e0; }
+    /* 四列布局 - 统一高度 */
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; gap: 16px; align-items: stretch; margin-bottom: 16px; }
+    @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px) { .grid-4 { grid-template-columns: 1fr; } }
+    .card.compact { padding: 20px; display: flex; flex-direction: column; height: 100%; }
+    .card.compact h3 { margin-bottom: 16px; flex-shrink: 0; }
+    .card.compact > *:not(h3) { flex-grow: 0; }
+    .card.compact table { flex-grow: 1; }
+    
+    /* 上传列样式 */
+    #col-upload input[type="file"] { margin-bottom: 12px; padding: 8px; border: 2px dashed #cbd5e0; border-radius: 8px; background: #f7fafc; cursor: pointer; }
+    #col-upload #thumb { max-width: 100%; max-height: 280px; object-fit: contain; margin: 12px 0; border-radius: 8px; }
+    #col-upload button { margin-top: auto; }
+    
+    /* Prompt列样式 */
+    #col-prompt textarea { flex-grow: 1; min-height: 200px; max-height: 400px; }
+    
+    /* 参数设置列样式 */
+    #col-settings .row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    #col-settings .row label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; color: #555; }
+    #col-settings .row select, #col-settings .row input { padding: 10px; }
+    #col-settings button { margin-top: auto; width: 100%; padding: 14px; font-size: 16px; }
+    
+    /* 批次列表列样式 */
+    #col-batches { overflow: hidden; }
+    #col-batches table { font-size: 13px; }
+    #col-batches th, #col-batches td { padding: 10px 8px; }
+    #batches-pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    #batches-pagination button { padding: 8px 14px; font-size: 13px; }
+    
+    .prompt-box { border: 1px dashed #e2e8f0; background: #f9fafb; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-break: break-word; max-height: 140px; overflow: auto; font-size: 13px; color:#2d3748; }
+    
+    /* Toast 提示 */
+    #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: white; color: #2d3748; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; animation: slideIn 0.3s ease-out; min-width: 280px; }
+    .toast.success { border-left: 4px solid #38a169; }
+    .toast.error { border-left: 4px solid #e53e3e; }
+    .toast.info { border-left: 4px solid #3182ce; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
+    .toast.hiding { animation: slideOut 0.3s ease-in forwards; }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- 登录界面 -->
+<div id="login-container" class="login-container">
+  <div class="login-card">
+    <h1>🎬 AI视频生成平台</h1>
+    <div class="form-group">
+      <label>用户名</label>
+      <input type="text" id="login-username" placeholder="请输入用户名" />
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="login-password" placeholder="请输入密码" />
+    </div>
+    <button onclick="handleLogin()">登录</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<!-- 主应用界面 -->
+<div id="app-container" class="container hidden">
+  <header>
+    <h1>🎬 AI视频批量生成</h1>
+    <div class="user-info">
+      <span id="user-display"></span>
+      <span id="user-credits" style="color:#2d3748;font-weight:600;"></span>
+      <button onclick="handleLogout()">退出登录</button>
+    </div>
+  </header>
+
+  <div class="grid-4">
+    <div class="card compact" id="col-upload">
+      <h3>1) 上传图片</h3>
+      <input type="file" id="image-file" accept="image/png, image/jpeg" />
+      <img id="thumb" style="display: none;" />
+      <button class="secondary" id="remove-img" style="display:none;">删除图片</button>
+    </div>
+
+    <div class="card compact" id="col-prompt">
+      <h3>2) Prompt</h3>
+      <textarea id="prompt" placeholder="请输入 prompt (必填，≤3000 字)"></textarea>
+    </div>
+
+    <div class="card compact" id="col-settings">
+      <h3>3) 参数设置</h3>
+      <div class="row">
+        <label>模型
+          <select id="model"><option value="sora-2">Sora 2</option></select>
+        </label>
+        <label>方向
+          <select id="orientation"><option value="landscape">横向</option><option value="portrait">纵向</option></select>
+        </label>
+        <label>尺寸
+          <select id="size"><option value="small">小</option><option value="medium">中</option></select>
+        </label>
+        <label>时长
+          <select id="duration"><option value="5">5秒</option><option value="10">10秒</option></select>
+        </label>
+        <label>视频数量
+          <input type="number" id="num-videos" value="1" min="1" max="50" />
+        </label>
+      </div>
+      <div style="margin:8px 0 12px 0;color:#4a5568;font-size:13px;">
+        每个视频消耗：10秒 15分；5秒 8分
+      </div>
+      <button onclick="createBatch()">创建批次</button>
+    </div>
+
+    <div class="card compact" id="col-batches">
+      <h3>4) 批次列表 <span style="font-size:13px;color:#718096;">(自动刷新)</span></h3>
+      <table id="batch-table">
+        <thead>
+          <tr>
+            <th>批次ID</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="batches-pagination">
+        <button class="secondary" onclick="prevBatchPage()">上一页</button>
+        <div id="batches-page-info" style="font-size:13px;color:#718096;">第 1 / 1 页</div>
+        <button class="secondary" onclick="nextBatchPage()">下一页</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>5) 任务结果 <span id="task-batch-id"></span></h3>
+    <div style="margin-bottom: 12px;">
+      <button onclick="retryFailedTasks()" class="secondary">一键重试失败</button>
+      <button onclick="downloadBatchZip()" class="secondary">下载 ZIP</button>
+    </div>
+    <table id="task-table">
+      <thead>
+        <tr>
+          <th>任务ID</th>
+          <th>状态</th>
+          <th>结果</th>
+          <th>Prompt</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+let currentBatchId = null;
+let uploadedImagePath = null;
+let autoRefreshInterval = null;
+
+// 状态标签映射
+const statusLabels = {
+  pending: '等待中',
+  queued: '排队中',
+  running: '进行中',
+  completed: '已完成',
+  failed: '失败',
+  cancelled: '已取消'
+};
+
+// Toast 提示函数
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+  toast.innerHTML = `<span style="font-size:20px;">${icon}</span><span>${message}</span>`;
+  
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
+// 初始化检查登录状态
+(async function init() {
+  try {
+    const resp = await fetch('/api/me');
+    const json = await resp.json();
+    if (json.ok) {
+      currentUser = json.data;
+      showApp();
+    } else {
+      showLogin();
+    }
+  } catch {
+    showLogin();
+  }
+})();
+
+function showLogin() {
+  document.getElementById('login-container').classList.remove('hidden');
+  document.getElementById('app-container').classList.add('hidden');
+}
+
+function showApp() {
+  document.getElementById('login-container').classList.add('hidden');
+  document.getElementById('app-container').classList.remove('hidden');
+  document.getElementById('user-display').textContent = `👤 ${currentUser.username}`;
+  document.getElementById('user-credits').textContent = `💎 余额：${currentUser.credits ?? 0}`;
+  refreshBatches();
+  // 启动自动刷新（每5秒）
+  if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(() => {
+    refreshBatches();
+    if (currentBatchId) viewTasks(currentBatchId);
+  }, 5000);
+}
+
+async function handleLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  
+  errorEl.style.display = 'none';
+  
+  if (!username || !password) {
+    errorEl.textContent = '请输入用户名和密码';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  try {
+    const resp = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const json = await resp.json();
+    
+    if (json.ok) {
+      // 登录成功后刷新用户信息，确保拿到最新积分
+      const meResp = await fetch('/api/me');
+      const meJson = await meResp.json();
+      if (meJson.ok) {
+        currentUser = meJson.data;
+      } else {
+        currentUser = json.data;
+      }
+      showApp();
+    } else {
+      errorEl.textContent = json.error.message || '登录失败';
+      errorEl.style.display = 'block';
+    }
+  } catch (err) {
+    errorEl.textContent = '网络错误，请稍后重试';
+    errorEl.style.display = 'block';
+  }
+}
+
+async function handleLogout() {
+  await fetch('/api/logout', { method: 'POST' });
+  currentUser = null;
+  if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+  showLogin();
+}
+
+// 图片上传
+document.getElementById('image-file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const resp = await fetch('/api/images/upload', { method: 'POST', body: formData });
+  const json = await resp.json();
+  
+  if (json.ok) {
+    uploadedImagePath = json.data.path;
+    const thumb = document.getElementById('thumb');
+    const removeBtn = document.getElementById('remove-img');
+    thumb.src = URL.createObjectURL(file);
+    thumb.style.display = 'block';
+    removeBtn.style.display = 'block';
+    showToast('图片上传成功', 'success');
+  } else {
+    showToast(json.error.message, 'error');
+  }
+});
+
+document.getElementById('remove-img').addEventListener('click', async () => {
+  if (!uploadedImagePath) return;
+  
+  const resp = await fetch('/api/images?image_path=' + encodeURIComponent(uploadedImagePath), { method: 'DELETE' });
+  const json = await resp.json();
+  
+  if (json.ok) {
+    uploadedImagePath = null;
+    document.getElementById('thumb').style.display = 'none';
+    document.getElementById('remove-img').style.display = 'none';
+    document.getElementById('image-file').value = '';
+    showToast('图片已删除', 'success');
+  }
+});
+
+// 创建批次
+async function createBatch() {
+  const prompt = document.getElementById('prompt').value.trim();
+  if (!prompt) {
+    alert('请输入 prompt');
+    return;
+  }
+  // 平台密钥仅由后端/管理员配置，不在前端提示或收集
+  
+  const req = {
+    prompt,
+    model: document.getElementById('model').value,
+    orientation: document.getElementById('orientation').value,
+    size: document.getElementById('size').value,
+    duration: parseInt(document.getElementById('duration').value),
+    num_videos: parseInt(document.getElementById('num-videos').value),
+    image_path: uploadedImagePath
+  };
+  
+  const idempotencyKey = `${Date.now()}-${Math.random()}`;
+  const resp = await fetch('/api/batches', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Idempotency-Key': idempotencyKey
+    },
+    body: JSON.stringify(req)
+  });
+  const json = await resp.json();
+  if (json.ok) {
+    showToast('批次创建成功', 'success');
+    refreshBatches();
+    // 扣减积分后刷新展示
+    try {
+      const meResp = await fetch('/api/me');
+      const meJson = await meResp.json();
+      if (meJson.ok) {
+        currentUser = meJson.data;
+        document.getElementById('user-credits').textContent = `💎 余额：${currentUser.credits ?? 0}`;
+      }
+    } catch {}
+  } else {
+    if (json.error && json.error.code === 'INSUFFICIENT_CREDITS') {
+      showToast('积分不足，请充值后再试', 'error');
+    } else {
+      showToast(json.error?.message || '创建失败', 'error');
+    }
+  }
+}
+
+// 刷新批次列表
+let batchPage = 1;
+let batchTotalPages = 1;
+const BATCHES_PER_PAGE = 5;
+
+async function refreshBatches() {
+  const resp = await fetch(`/api/batches?page=${batchPage}&page_size=${BATCHES_PER_PAGE}`);
+  const json = await resp.json();
+  
+  if (!json.ok) return;
+  const data = json.data;
+  batchTotalPages = data.total_pages || 1;
+  const pageInfo = document.getElementById('batches-page-info');
+  if (pageInfo) pageInfo.textContent = `第 ${data.page} / ${batchTotalPages} 页`;
+  
+  const tbody = document.querySelector('#batch-table tbody');
+  tbody.innerHTML = '';
+  
+  (data.items || []).forEach(batch => {
+    const tr = document.createElement('tr');
+    let statusLabel = '';
+    let statusColor = '#718096';
+    
+    if (batch.running > 0 || batch.queued > 0) {
+      statusLabel = '🔄 进行中';
+      statusColor = '#3182ce';
+    } else if (batch.failed > 0) {
+      statusLabel = '❌ 部分失败';
+      statusColor = '#e53e3e';
+    } else if (batch.completed === batch.total && batch.total > 0) {
+      statusLabel = '✅ 全部完成';
+      statusColor = '#38a169';
+    } else {
+      statusLabel = '待启动';
+    }
+    
+    const statusText = `<span style="color:${statusColor};font-weight:600;">${statusLabel}</span><br><small style="color:#718096;">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed} 进行:${batch.running} 排队:${batch.queued}</small>`;
+    
+    tr.innerHTML = `
+      <td>${batch.id.substring(0, 8)}...</td>
+      <td>${statusText}</td>
+      <td>
+        <button class="action-btn secondary" onclick="viewTasks('${batch.id}')">查看任务</button>
+        <button class="action-btn secondary" onclick="deleteBatch('${batch.id}')">删除</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function prevBatchPage() { if (batchPage > 1) { batchPage--; refreshBatches(); } }
+function nextBatchPage() { if (batchPage < batchTotalPages) { batchPage++; refreshBatches(); } }
+
+// 查看任务
+async function viewTasks(batchId) {
+  currentBatchId = batchId;
+  document.getElementById('task-batch-id').textContent = `(批次: ${batchId.substring(0, 8)}...)`;
+  
+  const resp = await fetch(`/api/batches/${batchId}/tasks`);
+  const json = await resp.json();
+  
+  if (!json.ok) return;
+  
+  const tbody = document.querySelector('#task-table tbody');
+  tbody.innerHTML = '';
+  
+  json.data.forEach(task => {
+    const tr = document.createElement('tr');
+    const statusClass = `status-${task.status}`;
+    const statusText = statusLabels[task.status] || task.status;
+    
+    let resultCell = '-';
+    if (task.status === 'completed' && task.result_path) {
+      const fname = task.result_path.split('/').pop();
+      resultCell = `<a href="${task.result_path}" target="_blank">${fname}</a>`;
+    }
+    
+    tr.innerHTML = `
+      <td>${task.id.substring(0, 8)}...</td>
+      <td class="${statusClass}">${statusText}</td>
+      <td>${resultCell}</td>
+      <td><div class="prompt-box">${(task.prompt || '').replace(/</g,'&lt;')}</div></td>
+      <td>
+        ${task.status === 'failed' ? `<button class="action-btn" onclick="retryTask('${task.id}')">重试</button>` : ''}
+        ${['pending','queued','running'].includes(task.status) ? `<button class="action-btn secondary" onclick="cancelTask('${task.id}')">取消</button>` : ''}
+        <button class="action-btn secondary" onclick="deleteTask('${task.id}')">删除</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 任务操作
+async function retryTask(taskId) {
+  const resp = await fetch(`/api/tasks/${taskId}/retry`, { method: 'POST' });
+  const json = await resp.json();
+  if (json.ok) {
+    alert('任务已重新提交');
+    viewTasks(currentBatchId);
+  } else {
+    alert(json.error.message);
+  }
+}
+
+async function cancelTask(taskId) {
+  const resp = await fetch(`/api/tasks/${taskId}/cancel`, { method: 'POST' });
+  const json = await resp.json();
+  if (json.ok) {
+    alert('任务已取消');
+    viewTasks(currentBatchId);
+  } else {
+    alert(json.error.message);
+  }
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('确认删除此任务？')) return;
+  const resp = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+  const json = await resp.json();
+  if (json.ok) {
+    viewTasks(currentBatchId);
+    refreshBatches();
+  }
+}
+
+async function deleteBatch(batchId) {
+  if (!confirm('确认删除整个批次？')) return;
+  const resp = await fetch(`/api/batches/${batchId}`, { method: 'DELETE' });
+  const json = await resp.json();
+  if (json.ok) {
+    alert('批次已删除');
+    refreshBatches();
+    if (currentBatchId === batchId) {
+      currentBatchId = null;
+      document.querySelector('#task-table tbody').innerHTML = '';
+    }
+  }
+}
+
+// 已移除前端API Key操作：密钥由后端安全配置
+
+// 批量操作
+async function retryFailedTasks() {
+  if (!currentBatchId) {
+    alert('请先选择一个批次');
+    return;
+  }
+  
+  const resp = await fetch(`/api/batches/${currentBatchId}/tasks`);
+  const json = await resp.json();
+  if (!json.ok) return;
+  
+  const failedTasks = json.data.filter(t => t.status === 'failed');
+  if (failedTasks.length === 0) {
+    alert('没有失败的任务');
+    return;
+  }
+  
+  for (const task of failedTasks) {
+    await fetch(`/api/tasks/${task.id}/retry`, { method: 'POST' });
+  }
+  
+  alert(`已重试 ${failedTasks.length} 个失败任务`);
+  viewTasks(currentBatchId);
+}
+
+function downloadBatchZip() {
+  if (!currentBatchId) {
+    alert('请先选择一个批次');
+    return;
+  }
+  window.location.href = `/api/batches/${currentBatchId}/download`;
+}
+</script>
+
+</body>
+</html>
+

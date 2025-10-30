@@ -49,7 +49,7 @@
 
 ```bash
 # 下载并执行部署脚本
-curl -fsSL https://raw.githubusercontent.com/ge0rgeguo/batch_ai_video/main/ai_batch_generation_website/deploy/setup_zuoshipin_server.sh -o setup.sh
+curl -fsSL https://raw.githubusercontent.com/ge0rgeguo/batch_ai_video/main/deploy/setup_zuoshipin_server.sh -o setup.sh
 sudo bash setup.sh
 ```
 
@@ -92,7 +92,7 @@ sudo bash setup.sh
 ```bash
 # 1. 克隆项目
 git clone https://github.com/ge0rgeguo/batch_ai_video.git
-cd batch_ai_video/ai_batch_generation_website
+cd batch_ai_video
 
 # 2. 创建虚拟环境
 python3 -m venv venv

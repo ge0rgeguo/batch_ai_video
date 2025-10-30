@@ -114,6 +114,12 @@ sudo -iu "${APP_USER}" bash -lc "\
   source venv/bin/activate && \
   python3 -c 'from server.db import init_db; init_db()'"
 
+log "7.5) 创建必要的目录"
+sudo -iu "${APP_USER}" bash -lc "\
+  cd '${APP_DIR}' && \
+  mkdir -p uploads public/temp-results && \
+  chmod 755 uploads public/temp-results"
+
 log "8) 写入 systemd 服务（单实例，禁止多副本）"
 cat > "${SERVICE_FILE}" <<EOF
 [Unit]

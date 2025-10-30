@@ -152,7 +152,7 @@
       <h3>3) 参数设置</h3>
       <div class="row">
         <label>模型
-          <select id="model"><option value="sora-2">Sora 2</option></select>
+          <select id="model"><option value="sora-2">Sora 2</option><option value="sora-2-pro">Sora 2 Pro</option></select>
         </label>
         <label>方向
           <select id="orientation"><option value="landscape">横向</option><option value="portrait">纵向</option></select>
@@ -161,7 +161,7 @@
           <select id="size"><option value="small">小</option><option value="medium">中</option></select>
         </label>
         <label>时长
-          <select id="duration"><option value="5">5秒</option><option value="10">10秒</option></select>
+          <select id="duration"></select>
         </label>
         <label>视频数量
           <input type="number" id="num-videos" value="1" min="1" max="50" />
@@ -230,6 +230,27 @@ const statusLabels = {
   cancelled: '已取消'
 };
 
+// 模型与可选时长映射
+const MODEL_DURATIONS = {
+  'sora-2': [5, 10, 15],
+  'sora-2-pro': [15, 25],
+};
+
+function updateDurationOptions() {
+  const modelSel = document.getElementById('model');
+  const durSel = document.getElementById('duration');
+  if (!modelSel || !durSel) return;
+  const model = modelSel.value;
+  const durations = MODEL_DURATIONS[model] || [];
+  durSel.innerHTML = '';
+  durations.forEach((d) => {
+    const opt = document.createElement('option');
+    opt.value = String(d);
+    opt.textContent = `${d}秒`;
+    durSel.appendChild(opt);
+  });
+}
+
 // Toast 提示函数
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
@@ -261,6 +282,10 @@ function showToast(message, type = 'success') {
   } catch {
     showLogin();
   }
+  // 初始化与监听时长选项
+  updateDurationOptions();
+  const modelSel = document.getElementById('model');
+  if (modelSel) modelSel.addEventListener('change', updateDurationOptions);
 })();
 
 function showLogin() {

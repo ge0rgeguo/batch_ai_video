@@ -87,7 +87,16 @@ class AsyncTaskExecutor:
                         task.error_summary = str(exc)[:500]
                         db.add(task)
                         # 失败退款（避免重复退款）
-                        unit_cost = 15 if int(task.duration) == 10 else 8
+                        if int(task.duration) == 5:
+                            unit_cost = 8
+                        elif int(task.duration) == 10:
+                            unit_cost = 15
+                        elif int(task.duration) == 15:
+                            unit_cost = 23
+                        elif int(task.duration) == 25:
+                            unit_cost = 38
+                        else:
+                            unit_cost = 15
                         exists = (
                             db.query(CreditTransaction)
                             .filter(
@@ -130,7 +139,16 @@ class AsyncTaskExecutor:
                             task.error_summary = str(exc)[:500]
                             db.add(task)
                             # 失败退款（避免重复退款）
-                            unit_cost = 15 if int(task.duration) == 10 else 8
+                            if int(task.duration) == 5:
+                                unit_cost = 8
+                            elif int(task.duration) == 10:
+                                unit_cost = 15
+                            elif int(task.duration) == 15:
+                                unit_cost = 23
+                            elif int(task.duration) == 25:
+                                unit_cost = 38
+                            else:
+                                unit_cost = 15
                             exists = (
                                 db.query(CreditTransaction)
                                 .filter(

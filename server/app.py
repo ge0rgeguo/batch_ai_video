@@ -215,8 +215,26 @@ def create_batch(
                         return ok({"batch_id": batch.id})
                 return fail("重复提交")
 
-    # 积分：定价 sora-2: 10秒=15分，5秒=8分
-    unit_cost = 15 if req.duration == 10 else 8
+    # 校验模型与时长组合
+    allowed = {
+        "sora-2": {5, 10, 15},
+        "sora-2-pro": {15, 25},
+    }
+    if req.model not in allowed or req.duration not in allowed[req.model]:
+        return fail("该模型不支持所选时长")
+
+    # 积分：定价
+    # 已知：10秒=15分，5秒=8分；新增 15 秒暂按 23 分（向上取整比例）
+    if req.duration == 5:
+        unit_cost = 8
+    elif req.duration == 10:
+        unit_cost = 15
+    elif req.duration == 15:
+        unit_cost = 23
+    elif req.duration == 25:
+        unit_cost = 38
+    else:
+        unit_cost = 15
     total_cost = unit_cost * req.num_videos
     user_credits = _get_user_credits(db, user.id)
     if user_credits < total_cost:
@@ -306,7 +324,16 @@ def list_tasks(batch_id: str, db: Session = Depends(get_db), user: User = Depend
             db.add(t)
             changed = True
             # 超时失败退款（避免重复退款）
-            unit_cost = 15 if int(t.duration) == 10 else 8
+            if int(t.duration) == 5:
+                unit_cost = 8
+            elif int(t.duration) == 10:
+                unit_cost = 15
+            elif int(t.duration) == 15:
+                unit_cost = 23
+            elif int(t.duration) == 25:
+                unit_cost = 38
+            else:
+                unit_cost = 15
             exists = (
                 db.query(CreditTransaction)
                 .filter(

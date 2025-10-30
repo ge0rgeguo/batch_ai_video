@@ -32,6 +32,7 @@ def _resolve_api_base() -> str:
 def create_sora2(
     *,
     api_key: str,
+    model: str,
     prompt: str,
     orientation: str,
     size: str,
@@ -49,11 +50,13 @@ def create_sora2(
     yunwu_size = "small" if size == "small" else "large"
 
     payload = {
-        "model": "sora-2",
+        "model": model,
         "prompt": prompt,
         "orientation": orientation,
         "size": yunwu_size,
         "duration": duration,
+        # 强制关闭水印
+        "watermark": "false",
     }
     if images:
         payload["images"] = images

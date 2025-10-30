@@ -38,10 +38,10 @@ class MeResponse(BaseModel):
 
 class BatchCreateRequest(BaseModel):
     prompt: str
-    model: Literal["sora-2"]
+    model: Literal["sora-2", "sora-2-pro"]
     orientation: Literal["portrait", "landscape"]
     size: Literal["small", "medium"]
-    duration: Literal[5, 10]
+    duration: Literal[5, 10, 15, 25]
     num_videos: int = Field(gt=0, le=50)
     image_path: Optional[str] = None
 

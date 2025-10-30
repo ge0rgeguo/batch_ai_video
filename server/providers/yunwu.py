@@ -102,6 +102,7 @@ def call_yunwu_generate(
     idempotency_key = f"batch-{int(time.time()*1000)}-{uuid.uuid4().hex[:8]}"
     created = create_sora2(
         api_key=api_key,
+        model=model,
         prompt=prompt,
         orientation=orientation,
         size=size,

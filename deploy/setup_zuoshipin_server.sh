@@ -29,21 +29,26 @@ ORIGIN_CERT_DIR="/etc/ssl/origin"
 ORIGIN_CERT_FILE="${ORIGIN_CERT_DIR}/cf-origin.crt"
 ORIGIN_KEY_FILE="${ORIGIN_CERT_DIR}/cf-origin.key"
 NGINX_SITE="/etc/nginx/sites-available/${SERVICE_NAME}"
+USE_ALIYUN_MIRROR="${USE_ALIYUN_MIRROR:-0}"
 
 log() { echo -e "\033[1;32m[$(date +%H:%M:%S)] $*\033[0m"; }
 warn() { echo -e "\033[1;33m[$(date +%H:%M:%S)] $*\033[0m"; }
 err() { echo -e "\033[1;31m[$(date +%H:%M:%S)] $*\033[0m"; }
 
 log "1) 安装系统依赖 (git, nginx, python, ufw, fail2ban)"
-# 检测并配置阿里云 apt 镜像源（如果尚未配置）
-if ! grep -q "mirrors.aliyun.com" /etc/apt/sources.list 2>/dev/null; then
-  log "检测到未使用阿里云镜像源，正在配置..."
-  if [[ -f /etc/apt/sources.list ]]; then
-    cp /etc/apt/sources.list /etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S)
-    sed -i 's|http://.*archive.ubuntu.com|http://mirrors.aliyun.com|g; s|http://.*security.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
-    sed -i 's|http://.*mirrors.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
-    log "已配置阿里云 apt 镜像源"
+# 可选：仅当 USE_ALIYUN_MIRROR=1 时，切换为阿里云 apt 镜像源；默认在香港/海外保持系统默认源
+if [[ "${USE_ALIYUN_MIRROR}" == "1" ]]; then
+  if ! grep -q "mirrors.aliyun.com" /etc/apt/sources.list 2>/dev/null; then
+    log "使用阿里云 apt 镜像源..."
+    if [[ -f /etc/apt/sources.list ]]; then
+      cp /etc/apt/sources.list /etc/apt/sources.list.backup.$(date +%Y%m%d_%H%M%S)
+      sed -i 's|http://.*archive.ubuntu.com|http://mirrors.aliyun.com|g; s|http://.*security.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
+      sed -i 's|http://.*mirrors.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
+      log "已配置阿里云 apt 镜像源"
+    fi
   fi
+else
+  log "跳过镜像源替换，使用系统默认源"
 fi
 apt-get update -y
 DEBIAN_FRONTEND=noninteractive apt-get install -y git nginx python3-venv python3-pip ufw fail2ban

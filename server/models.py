@@ -134,7 +134,7 @@ class Task(Base):
     batch = relationship("Batch", back_populates="tasks")
 
     __table_args__ = (
-        CheckConstraint("duration IN (5, 10)", name="ck_duration_values"),
+        CheckConstraint("duration IN (5, 10, 15, 25)", name="ck_duration_values"),
     )
 
 

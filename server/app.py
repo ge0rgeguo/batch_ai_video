@@ -235,7 +235,7 @@ def create_batch(
 
     # 校验模型与时长组合
     allowed = {
-        "sora-2": {5, 10, 15},
+        "sora-2": {10, 15},
         "sora-2-pro": {15, 25},
     }
     if req.model not in allowed or req.duration not in allowed[req.model]:

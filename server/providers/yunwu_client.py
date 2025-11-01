@@ -56,7 +56,7 @@ def create_sora2(
         "size": yunwu_size,
         "duration": duration,
         # 强制关闭水印
-        "watermark": "false",
+        "watermark": False,
     }
     if images:
         payload["images"] = images

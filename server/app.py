@@ -65,6 +65,24 @@ async def on_startup() -> None:
         import asyncio
         asyncio.create_task(cleanup_loop())
         print("[startup] Cleanup loop started. Public dir:", settings.PUBLIC_DIR)
+        # 进程内队列在重启后会丢失，这里自动将 DB 中未启动的任务重新入队
+        try:
+            from .db import SessionLocal
+            from .models import Task, TaskStatus
+            with SessionLocal() as db:
+                rows = (
+                    db.query(Task.id)
+                    .filter(Task.status.in_([TaskStatus.pending, TaskStatus.queued]), Task.deleted_at.is_(None))
+                    .all()
+                )
+                count = 0
+                for (task_id,) in rows:
+                    executor.enqueue_task(task_id)
+                    count += 1
+                if count:
+                    print(f"[startup] Re-enqueued {count} pending/queued tasks")
+        except Exception as e:
+            print("[startup] Re-enqueue failed:", e)
     else:
         print("[startup] DISABLE_BACKGROUND=true，后台任务未启动（仅用于测试环境）")
 

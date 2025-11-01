@@ -76,8 +76,8 @@ def _ensure_initial_admin() -> None:
         admin_user = db.query(User).filter(User.username == "admin").first()
         if not admin_user:
             default_password = os.environ.get("INITIAL_ADMIN_PASSWORD", "admin000")
-            print("⚠️  创建默认管理员: username=admin, password=" + default_password)
-            print("🔒 生产环境请立即修改密码或设置 INITIAL_ADMIN_PASSWORD 环境变量")
+            print("⚠️  创建默认管理员: username=admin")
+            print("🔒 生产环境请设置 INITIAL_ADMIN_PASSWORD 环境变量或立即修改密码")
             admin_user = User(
                 username="admin",
                 password_hash=hash_password(default_password),

@@ -11,6 +11,7 @@ from .models import Task, TaskStatus, CreditTransaction
 from .providers.yunwu import call_yunwu_generate
 from .settings import settings
 from .batch_utils import recompute_batch_counters
+from .pricing import get_unit_cost
 
 
 class AsyncTaskExecutor:
@@ -87,16 +88,7 @@ class AsyncTaskExecutor:
                         task.error_summary = str(exc)[:500]
                         db.add(task)
                         # 失败退款（避免重复退款）
-                        if int(task.duration) == 5:
-                            unit_cost = 8
-                        elif int(task.duration) == 10:
-                            unit_cost = 15
-                        elif int(task.duration) == 15:
-                            unit_cost = 23
-                        elif int(task.duration) == 25:
-                            unit_cost = 38
-                        else:
-                            unit_cost = 15
+                        unit_cost = get_unit_cost(task.model, int(task.duration))
                         exists = (
                             db.query(CreditTransaction)
                             .filter(
@@ -139,16 +131,7 @@ class AsyncTaskExecutor:
                             task.error_summary = str(exc)[:500]
                             db.add(task)
                             # 失败退款（避免重复退款）
-                            if int(task.duration) == 5:
-                                unit_cost = 8
-                            elif int(task.duration) == 10:
-                                unit_cost = 15
-                            elif int(task.duration) == 15:
-                                unit_cost = 23
-                            elif int(task.duration) == 25:
-                                unit_cost = 38
-                            else:
-                                unit_cost = 15
+                            unit_cost = get_unit_cost(task.model, int(task.duration))
                             exists = (
                                 db.query(CreditTransaction)
                                 .filter(

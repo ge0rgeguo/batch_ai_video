@@ -22,6 +22,7 @@ from .db import get_db, init_db
 from .models import Batch, IdempotencyKey, Task, TaskStatus, User, CreditTransaction
 from .queue import executor
 from .rate_limit import rate_limiter
+from .pricing import get_unit_cost
 from .schemas import (
     ApiResponse,
     BatchCreateRequest,
@@ -233,26 +234,29 @@ def create_batch(
                         return ok({"batch_id": batch.id})
                 return fail("重复提交")
 
-    # 校验模型与时长组合
-    allowed = {
-        "sora-2": {10, 15},
-        "sora-2-pro": {15, 25},
+    # 校验模型与时长/尺寸组合
+    # sora-2: 10s/15s, 仅 small(720p)
+    # sora-2-pro: 10s/15s/25s, 仅 large(1080p)
+    model_constraints = {
+        "sora-2": {
+            "durations": {10, 15},
+            "allowed_sizes": {"small"},
+        },
+        "sora-2-pro": {
+            "durations": {10, 15, 25},
+            "allowed_sizes": {"large"},
+        },
     }
-    if req.model not in allowed or req.duration not in allowed[req.model]:
-        return fail("该模型不支持所选时长")
+    if req.model not in model_constraints:
+        return fail("不支持的模型")
+    constraints = model_constraints[req.model]
+    if req.duration not in constraints["durations"]:
+        return fail(f"该模型不支持所选时长，支持: {sorted(constraints['durations'])}")
+    if req.size not in constraints["allowed_sizes"]:
+        return fail(f"该模型不支持所选尺寸，支持: {sorted(constraints['allowed_sizes'])}")
 
-    # 积分：定价
-    # 已知：10秒=15分，5秒=8分；新增 15 秒暂按 23 分（向上取整比例）
-    if req.duration == 5:
-        unit_cost = 8
-    elif req.duration == 10:
-        unit_cost = 15
-    elif req.duration == 15:
-        unit_cost = 23
-    elif req.duration == 25:
-        unit_cost = 38
-    else:
-        unit_cost = 15
+    # 积分：定价（按模型与时长）
+    unit_cost = get_unit_cost(req.model, req.duration)
     total_cost = unit_cost * req.num_videos
     user_credits = _get_user_credits(db, user.id)
     if user_credits < total_cost:
@@ -342,16 +346,7 @@ def list_tasks(batch_id: str, db: Session = Depends(get_db), user: User = Depend
             db.add(t)
             changed = True
             # 超时失败退款（避免重复退款）
-            if int(t.duration) == 5:
-                unit_cost = 8
-            elif int(t.duration) == 10:
-                unit_cost = 15
-            elif int(t.duration) == 15:
-                unit_cost = 23
-            elif int(t.duration) == 25:
-                unit_cost = 38
-            else:
-                unit_cost = 15
+            unit_cost = get_unit_cost(t.model, int(t.duration))
             exists = (
                 db.query(CreditTransaction)
                 .filter(

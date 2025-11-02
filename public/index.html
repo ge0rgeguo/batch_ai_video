@@ -158,7 +158,7 @@
           <select id="orientation"><option value="landscape">横向</option><option value="portrait">纵向</option></select>
         </label>
         <label>尺寸
-          <select id="size"><option value="small">小</option><option value="medium">中</option></select>
+          <select id="size"><option value="small">720p</option><option value="large">1080p</option></select>
         </label>
         <label>时长
           <select id="duration"></select>
@@ -231,24 +231,44 @@ const statusLabels = {
 };
 
 // 模型与可选时长映射
-const MODEL_DURATIONS = {
-  'sora-2': [5, 10, 15],
-  'sora-2-pro': [15, 25],
+// 模型配置：时长、尺寸、积分定价
+const MODEL_CONFIG = {
+  'sora-2': {
+    durations: [10, 15],
+    allowedSizes: ['small'],
+    pricing: {10: 10, 15: 15},
+  },
+  'sora-2-pro': {
+    durations: [10, 15, 25],
+    allowedSizes: ['large'],
+    pricing: {10: 50, 15: 75, 25: 100},
+  },
 };
 
 function updateDurationOptions() {
   const modelSel = document.getElementById('model');
   const durSel = document.getElementById('duration');
-  if (!modelSel || !durSel) return;
+  const sizeSel = document.getElementById('size');
+  if (!modelSel || !durSel || !sizeSel) return;
+  
   const model = modelSel.value;
-  const durations = MODEL_DURATIONS[model] || [];
+  const config = MODEL_CONFIG[model] || {durations: [10], allowedSizes: ['small'], pricing: {}};
+  
+  // 更新时长选项
   durSel.innerHTML = '';
-  durations.forEach((d) => {
+  config.durations.forEach((d) => {
     const opt = document.createElement('option');
     opt.value = String(d);
-    opt.textContent = `${d}秒`;
+    const cost = config.pricing[d] || 0;
+    opt.textContent = `${d}秒 (${cost}分)`;
     durSel.appendChild(opt);
   });
+  
+  // 根据模型强制设置尺寸
+  const allowedSize = config.allowedSizes[0] || 'small';
+  sizeSel.value = allowedSize;
+  // 禁用尺寸选择（每个模型只有一个尺寸）
+  sizeSel.disabled = true;
 }
 
 // Toast 提示函数

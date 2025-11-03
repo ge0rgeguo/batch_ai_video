@@ -40,7 +40,7 @@ class BatchCreateRequest(BaseModel):
     prompt: str
     model: Literal["sora-2", "sora-2-pro"]
     orientation: Literal["portrait", "landscape"]
-    size: Literal["small", "medium"]
+    size: Literal["small", "medium", "large"]
     duration: Literal[5, 10, 15, 25]
     num_videos: int = Field(gt=0, le=50)
     image_path: Optional[str] = None

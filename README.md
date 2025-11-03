@@ -259,7 +259,7 @@ python adjust_credits.py username -20 "消费退款"
    ↓
 2. 上传图片
    ↓
-3. 输入 Prompt (≤3000 字符)
+3. 输入 Prompt (≤10000 字符)
    ↓
 4. 配置参数(模型、方向、尺寸、时长、数量)
    ↓

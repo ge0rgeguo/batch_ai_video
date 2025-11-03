@@ -216,8 +216,8 @@ def create_batch(
     print(f"[create_batch] user_id={user.id} num_videos={req.num_videos} prompt_len={len(prompt)} image_path={req.image_path or 'None'}")
     if not prompt:
         return fail("prompt 为必填")
-    if len(prompt) > 3000:
-        return fail("prompt 超过 3000 字符")
+    if len(prompt) > 10000:
+        return fail("prompt 超过 10000 字符")
 
     if not rate_limiter.allow_new_batch(user.id):
         return fail("批次创建速率限制，请稍后再试")

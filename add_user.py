@@ -12,8 +12,9 @@
 
 import sys
 import bcrypt
+from datetime import datetime
 from server.db import SessionLocal
-from server.models import User
+from server.models import User, CreditTransaction
 
 def add_user(username: str, password: str, is_admin: bool = False, initial_credits: int = 0) -> None:
     db = SessionLocal()
@@ -30,14 +31,26 @@ def add_user(username: str, password: str, is_admin: bool = False, initial_credi
             username=username,
             password_hash=password_hash,
             is_admin=is_admin,
-            enabled=True,
-            credits=initial_credits
+            enabled=True
         )
         db.add(new_user)
+        db.flush()  # 获取 user_id
+        
+        # 如果指定了初始积分，创建积分交易记录
+        if initial_credits > 0:
+            credit_tx = CreditTransaction(
+                user_id=new_user.id,
+                delta=initial_credits,
+                reason="初始积分",
+                created_at=datetime.utcnow()
+            )
+            db.add(credit_tx)
+        
         db.commit()
         
         role = "管理员" if is_admin else "普通用户"
         print(f"✅ 成功创建用户:")
+        print(f"   用户ID: {new_user.id}")
         print(f"   用户名: {username}")
         print(f"   权限: {role}")
         print(f"   初始积分: {initial_credits}")

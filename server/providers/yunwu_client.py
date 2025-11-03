@@ -58,6 +58,10 @@ def create_sora2(
         # 强制关闭水印
         "watermark": False,
     }
+    # sora-2-pro 需要 private 字段（根据云雾API文档）
+    if model == "sora-2-pro":
+        payload["private"] = False
+    
     if images:
         payload["images"] = images
 

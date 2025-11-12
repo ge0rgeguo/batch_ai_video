@@ -131,16 +131,40 @@ def query_task(*, api_key: str, task_id: str) -> QueryResult:
     data = resp.json()
     print("[yunwu_client] query_response_json_keys=", list(data.keys()))
 
-    # 云雾状态字段示例: { id, status, video_url? }
-    status = (data.get("status") or "").lower().replace(" ", "-")
-    if status not in {s.value for s in RemoteTaskStatus}:
-        # 容错处理：将未知状态归为 in-progress
-        status = RemoteTaskStatus.in_progress.value
+    # 云雾状态字段：优先使用 data.status（completed），回退到外层 status（SUCCESS）
+    # 外层 status 可能是 SUCCESS/FAILED，内层 data.status 是 completed/failed
+    status_raw = ""
+    if "data" in data and isinstance(data.get("data"), dict):
+        status_raw = (data["data"].get("status") or "").lower()
+    if not status_raw:
+        status_raw = (data.get("status") or "").lower()
+    
+    # 状态映射：SUCCESS -> completed, FAILED -> failed
+    status_mapping = {
+        "success": "completed",
+        "failed": "failed",
+        "error": "failed",
+        "completed": "completed",
+        "in-progress": "in-progress",
+        "in_progress": "in-progress",
+        "processing": "in-progress",
+        "pending": "pending",
+        "queued": "queued",
+    }
+    status = status_mapping.get(status_raw.replace(" ", "-"), RemoteTaskStatus.in_progress.value)
+    print(f"[yunwu_client] status_raw={status_raw}, mapped_status={status}")
+
+    # video_url 也可能在 data 对象中
+    video_url = None
+    if "data" in data and isinstance(data.get("data"), dict):
+        video_url = data["data"].get("video_url")
+    if not video_url:
+        video_url = data.get("video_url") or data.get("result_url")
 
     return QueryResult(
         status=RemoteTaskStatus(status),
-        video_url=data.get("video_url") or data.get("result_url"),
-        error=data.get("error") or data.get("message"),
+        video_url=video_url,
+        error=data.get("error") or data.get("message") or data.get("fail_reason"),
     )
 
 

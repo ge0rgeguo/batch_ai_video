@@ -561,7 +561,53 @@ async function loadBatches(silent = false) {
   
   const tbody = document.querySelector('#batch-table tbody');
   
-  // 保存当前展开状态
+  // 静默刷新时，增量更新而不重建DOM
+  if (silent) {
+    // 检查批次数量是否变化（有新批次或删除）
+    const currentBatchCount = tbody.querySelectorAll('tr.batch-row').length;
+    if (currentBatchCount !== data.items.length) {
+      // 批次数量变化，需要完全重建
+      silent = false;
+    }
+  }
+  
+  if (silent) {
+    // 更新一级表格的状态数据
+    data.items.forEach((batch) => {
+      const batchRow = tbody.querySelector(`tr[data-batch-id="${batch.id}"]`);
+      if (batchRow) {
+        // 更新状态标签
+        let statusLabel = '';
+        let statusColor = '#718096';
+        if (batch.running > 0 || batch.queued > 0) {
+          statusLabel = '🔄 进行中';
+          statusColor = '#3182ce';
+        } else if (batch.failed > 0) {
+          statusLabel = '❌部分失败';
+          statusColor = '#e53e3e';
+        } else if (batch.completed === batch.total && batch.total > 0) {
+          statusLabel = '✅ 全部完成';
+          statusColor = '#38a169';
+        } else {
+          statusLabel = '⏸ 待启动';
+        }
+        
+        // 更新状态单元格
+        const statusCell = batchRow.cells[4];
+        if (statusCell) {
+          statusCell.innerHTML = `<span style="color:${statusColor};font-weight:600;">${statusLabel}</span><br><small style="color:#718096;">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed}</small>`;
+        }
+      }
+      
+      // 如果批次已展开，刷新其任务详情
+      if (expandedBatches.has(batch.id)) {
+        refreshTasksDetail(batch.id);
+      }
+    });
+    return; // 静默刷新时直接返回，不重建DOM
+  }
+  
+  // 非静默刷新或无展开项时，完全重建表格
   const currentExpanded = new Set(expandedBatches);
   tbody.innerHTML = '';
   
@@ -674,6 +720,51 @@ async function loadBatches(silent = false) {
   
   if (!silent && data.items.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#718096;padding:40px;">暂无批次</td></tr>';
+  }
+}
+
+// 刷新二级表格任务详情（不重建DOM）
+async function refreshTasksDetail(batchId) {
+  const tasksTbody = document.getElementById(`tasks-tbody-${batchId}`);
+  if (!tasksTbody) return; // 如果二级表格不存在，跳过
+  
+  const resp = await fetch(`/api/batches/${batchId}/tasks`);
+  const json = await resp.json();
+  
+  if (!json.ok) return;
+  
+  // 清空并重新填充任务数据
+  tasksTbody.innerHTML = '';
+  json.data.forEach((task, idx) => {
+    const tr = document.createElement('tr');
+    const statusClass = `status-${task.status}`;
+    const statusText = statusLabels[task.status] || task.status;
+    
+    let resultHtml = '<span style="color:#a0aec0;">-</span>';
+    if (task.result_path) {
+      const url = `/public/temp-results/${task.result_path}`;
+      resultHtml = `<a href="${url}" target="_blank" class="result-link">查看视频</a>`;
+    } else if (task.error_summary) {
+      resultHtml = `<span style="color:#e53e3e;font-size:12px;">${task.error_summary}</span>`;
+    }
+    
+    tr.innerHTML = `
+      <td style="text-align:center;">${idx + 1}</td>
+      <td><span class="${statusClass}">${statusText}</span></td>
+      <td>${resultHtml}</td>
+      <td>
+        <div class="action-buttons">
+          ${task.result_path ? `<a href="${'/public/temp-results/' + task.result_path}" download class="btn-link">下载</a>` : ''}
+          ${task.status === 'failed' ? `<button onclick="retryTask('${task.id}', '${batchId}', event)">重试</button>` : ''}
+          <button class="danger" onclick="deleteTask('${task.id}', '${batchId}', event)">删除</button>
+        </div>
+      </td>
+    `;
+    tasksTbody.appendChild(tr);
+  });
+  
+  if (json.data.length === 0) {
+    tasksTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#718096;padding:20px;">暂无任务</td></tr>';
   }
 }
 

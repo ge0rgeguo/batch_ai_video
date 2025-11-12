@@ -823,9 +823,27 @@ async function refillForm(batchId, event) {
     uploadedImagePath = batch.image_path;
     const thumb = document.getElementById('thumb');
     const removeBtn = document.getElementById('remove-img');
+    const fileInput = document.getElementById('image-file');
     thumb.src = `/uploads/${batch.image_path}`;
     thumb.style.display = 'block';
     removeBtn.style.display = 'block';
+    fileInput.value = ''; // 清空file input，避免混淆
+    
+    // 添加图片加载错误处理
+    thumb.onerror = () => {
+      console.error('图片加载失败:', thumb.src);
+      showToast('图片加载失败', 'error');
+      thumb.style.display = 'none';
+      uploadedImagePath = null;
+    };
+    
+    console.log('回填图片路径:', `/uploads/${batch.image_path}`);
+  } else {
+    // 如果没有图片，重置图片区域
+    uploadedImagePath = null;
+    document.getElementById('thumb').style.display = 'none';
+    document.getElementById('remove-img').style.display = 'none';
+    document.getElementById('image-file').value = '';
   }
   
   // 滚动到顶部

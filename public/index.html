@@ -101,34 +101,49 @@
     /* 缩略图片 */
     .thumb-small { max-width: 60px; max-height: 60px; border-radius: 4px; object-fit: cover; }
     
-    /* 提示词预览框 - 修改3: 优化显示和悬浮提示 */
+    /* 提示词预览框 - 修复：使用tooltip方式 */
     .prompt-preview { 
       max-width: 100%; 
-      max-height: 60px; 
       overflow: hidden; 
+      text-overflow: ellipsis;
+      white-space: nowrap;
       font-size: 12px; 
       color: #4a5568; 
       line-height: 1.5; 
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
-      -webkit-box-orient: vertical;
-      word-break: break-all;
       background: #f9fafb; 
       padding: 8px; 
       border-radius: 4px; 
       border: 1px solid #e2e8f0; 
       cursor: help;
-      position: relative;
     }
     .prompt-preview:hover { 
       background: #edf2f7; 
-      overflow: visible;
-      z-index: 10;
+    }
+    
+    /* Tooltip容器 */
+    .prompt-cell { position: relative; }
+    .prompt-tooltip {
+      display: none;
       position: absolute;
-      max-height: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      max-width: 400px;
+      left: 0;
+      top: 100%;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      max-width: 500px;
+      width: max-content;
+      margin-top: 4px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #2d3748;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .prompt-cell:hover .prompt-tooltip {
+      display: block;
     }
     
     /* Toast */
@@ -589,7 +604,10 @@ async function loadBatches(silent = false) {
     tr.innerHTML = `
       <td>${(currentPage - 1) * PAGE_SIZE + index + 1}</td>
       <td>${createdAt}</td>
-      <td><div class="prompt-preview" title="${batch.prompt.replace(/"/g, '&quot;')}">${promptPreview.replace(/</g, '&lt;')}</div></td>
+      <td class="prompt-cell">
+        <div class="prompt-preview">${promptPreview.replace(/</g, '&lt;')}</div>
+        <div class="prompt-tooltip">${batch.prompt.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>
+      </td>
       <td style="text-align:center;">${imgHtml}</td>
       <td>
         <span style="color:${statusColor};font-weight:600;">${statusLabel}</span><br>
@@ -689,10 +707,10 @@ async function insertTasksDetail(tbody, batchId, afterRow = null) {
         <table class="tasks-table">
           <thead>
             <tr>
-              <th style="width:60px;">序号</th>
-              <th style="width:120px;">状态</th>
-              <th>结果</th>
-              <th style="width:200px;">操作</th>
+              <th style="width:50px;">序号</th>
+              <th style="width:160px;">状态</th>
+              <th style="width:430px;">结果</th>
+              <th style="width:240px;">操作</th>
             </tr>
           </thead>
           <tbody id="tasks-tbody-${batchId}"></tbody>

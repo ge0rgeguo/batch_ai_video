@@ -799,13 +799,23 @@ async function insertTasksDetail(tbody, batchId, afterRow = null) {
 async function refillForm(batchId, event) {
   event.stopPropagation();
   
+  console.log('[refillForm] 开始回填，batchId:', batchId);
+  
   const resp = await fetch(`/api/batches?page=1&page_size=100`);
   const json = await resp.json();
   
-  if (!json.ok) return;
+  if (!json.ok) {
+    console.error('[refillForm] 获取批次列表失败');
+    return;
+  }
   
   const batch = json.data.items.find(b => b.id === batchId);
-  if (!batch) return;
+  if (!batch) {
+    console.error('[refillForm] 未找到批次:', batchId);
+    return;
+  }
+  
+  console.log('[refillForm] 批次数据:', batch);
   
   // 回填数据
   document.getElementById('prompt').value = batch.prompt;
@@ -819,27 +829,41 @@ async function refillForm(batchId, event) {
   document.getElementById('duration').value = batch.duration;
   
   // 图片处理
+  console.log('[refillForm] image_path:', batch.image_path);
   if (batch.image_path) {
     uploadedImagePath = batch.image_path;
     const thumb = document.getElementById('thumb');
     const removeBtn = document.getElementById('remove-img');
     const fileInput = document.getElementById('image-file');
+    
+    console.log('[refillForm] 设置图片 src:', `/uploads/${batch.image_path}`);
+    console.log('[refillForm] thumb元素:', thumb);
+    console.log('[refillForm] removeBtn元素:', removeBtn);
+    
     thumb.src = `/uploads/${batch.image_path}`;
     thumb.style.display = 'block';
     removeBtn.style.display = 'block';
     fileInput.value = ''; // 清空file input，避免混淆
     
+    console.log('[refillForm] 图片display设置为:', thumb.style.display);
+    console.log('[refillForm] 按钮display设置为:', removeBtn.style.display);
+    
     // 添加图片加载错误处理
     thumb.onerror = () => {
-      console.error('图片加载失败:', thumb.src);
+      console.error('[refillForm] 图片加载失败:', thumb.src);
       showToast('图片加载失败', 'error');
       thumb.style.display = 'none';
       uploadedImagePath = null;
     };
     
-    console.log('回填图片路径:', `/uploads/${batch.image_path}`);
+    // 添加图片加载成功处理
+    thumb.onload = () => {
+      console.log('[refillForm] 图片加载成功:', thumb.src);
+    };
+    
   } else {
     // 如果没有图片，重置图片区域
+    console.log('[refillForm] 没有图片，重置图片区域');
     uploadedImagePath = null;
     document.getElementById('thumb').style.display = 'none';
     document.getElementById('remove-img').style.display = 'none';

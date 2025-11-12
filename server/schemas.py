@@ -80,6 +80,7 @@ class BatchRead(BaseModel):
     size: str
     duration: int
     num_videos: int
+    image_path: Optional[str] = None
     total: int
     completed: int
     failed: int

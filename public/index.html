@@ -668,7 +668,7 @@ async function loadBatches(silent = false) {
     
     // 如果已展开，插入二级表格
     if (isExpanded) {
-      insertTasksDetail(tbody, batch.id);
+      insertTasksDetail(tbody, batch.id, tr);
     }
   });
   

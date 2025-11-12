@@ -142,6 +142,13 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
+    /* 向上显示的tooltip */
+    .prompt-tooltip.show-above {
+      top: auto;
+      bottom: 100%;
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
     .prompt-cell:hover .prompt-tooltip {
       display: block;
     }
@@ -604,7 +611,7 @@ async function loadBatches(silent = false) {
     tr.innerHTML = `
       <td>${(currentPage - 1) * PAGE_SIZE + index + 1}</td>
       <td>${createdAt}</td>
-      <td class="prompt-cell">
+      <td class="prompt-cell" data-prompt="${batch.prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">
         <div class="prompt-preview">${promptPreview.replace(/</g, '&lt;')}</div>
         <div class="prompt-tooltip">${batch.prompt.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>
       </td>
@@ -623,6 +630,7 @@ async function loadBatches(silent = false) {
         </div>
       </td>
     `;
+    
     // 修改4: 点击行展开/收起
     tr.addEventListener('click', (e) => {
       // 如果点击的是按钮，不触发行点击
@@ -631,6 +639,26 @@ async function loadBatches(silent = false) {
       }
       toggleBatchDetail(batch.id, e);
     });
+    
+    // 智能tooltip定位
+    const promptCell = tr.querySelector('.prompt-cell');
+    const tooltip = tr.querySelector('.prompt-tooltip');
+    if (promptCell && tooltip) {
+      promptCell.addEventListener('mouseenter', () => {
+        // 检测tooltip是否会超出视口底部
+        const rect = promptCell.getBoundingClientRect();
+        const tooltipHeight = 200; // 预估tooltip高度
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        
+        // 如果下方空间不足且上方空间更大，则向上显示
+        if (spaceBelow < tooltipHeight && spaceAbove > spaceBelow) {
+          tooltip.classList.add('show-above');
+        } else {
+          tooltip.classList.remove('show-above');
+        }
+      });
+    }
     
     tbody.appendChild(tr);
     

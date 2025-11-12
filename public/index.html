@@ -644,8 +644,9 @@ async function loadBatches(silent = false) {
     const promptCell = tr.querySelector('.prompt-cell');
     const tooltip = tr.querySelector('.prompt-tooltip');
     if (promptCell && tooltip) {
-      // 使用textContent设置内容，保持原始换行符，由CSS的white-space: pre-wrap处理显示
-      tooltip.textContent = batch.prompt;
+      // 将字符串中的\n替换为真正的换行符，由CSS的white-space: pre-wrap处理显示
+      const displayText = batch.prompt.replace(/\\n/g, '\n').replace(/\\r/g, '');
+      tooltip.textContent = displayText;
       
       promptCell.addEventListener('mouseenter', () => {
         // 检测tooltip是否会超出视口底部

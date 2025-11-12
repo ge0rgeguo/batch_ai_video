@@ -611,9 +611,9 @@ async function loadBatches(silent = false) {
     tr.innerHTML = `
       <td>${(currentPage - 1) * PAGE_SIZE + index + 1}</td>
       <td>${createdAt}</td>
-      <td class="prompt-cell" data-prompt="${batch.prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">
+      <td class="prompt-cell">
         <div class="prompt-preview">${promptPreview.replace(/</g, '&lt;')}</div>
-        <div class="prompt-tooltip">${batch.prompt.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>
+        <div class="prompt-tooltip"></div>
       </td>
       <td style="text-align:center;">${imgHtml}</td>
       <td>
@@ -640,10 +640,13 @@ async function loadBatches(silent = false) {
       toggleBatchDetail(batch.id, e);
     });
     
-    // 智能tooltip定位
+    // 智能tooltip定位和内容设置
     const promptCell = tr.querySelector('.prompt-cell');
     const tooltip = tr.querySelector('.prompt-tooltip');
     if (promptCell && tooltip) {
+      // 使用textContent设置内容，保持原始换行符，由CSS的white-space: pre-wrap处理显示
+      tooltip.textContent = batch.prompt;
+      
       promptCell.addEventListener('mouseenter', () => {
         // 检测tooltip是否会超出视口底部
         const rect = promptCell.getBoundingClientRect();

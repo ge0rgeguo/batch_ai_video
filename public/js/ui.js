@@ -312,12 +312,6 @@ function buildBatchRow(batch, displayIndex, expanded) {
   row.dataset.batchId = batch.id;
 
   const promptPreview = buildPromptPreview(batch.prompt);
-  const promptHtml = `
-    <td class="prompt-cell" data-full-prompt="${escapeHtml(batch.prompt)}">
-      <div class="prompt-preview">${promptPreview}</div>
-      <div class="prompt-tooltip"></div>
-    </td>
-  `;
 
   const imageHtml = batch.image_path
     ? `<img src="/uploads/${encodeURIComponent(batch.image_path)}" class="thumb-small" alt="图片预览" />`
@@ -333,7 +327,10 @@ function buildBatchRow(batch, displayIndex, expanded) {
     <td>${displayIndex}</td>
     <td>${formatDateTime(batch.created_at)}</td>
     <td style="text-align:center;">${batchDuration}</td>
-    ${promptHtml}
+    <td class="prompt-cell" data-full-prompt="${escapeHtml(batch.prompt)}">
+      <div class="prompt-preview">${promptPreview}</div>
+      <div class="prompt-tooltip"></div>
+    </td>
     <td style="text-align:center;">${imageHtml}</td>
     ${statusHtml}
     <td>

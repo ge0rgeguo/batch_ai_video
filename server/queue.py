@@ -172,6 +172,7 @@ class AsyncTaskExecutor:
                     size=task.size,
                     duration=task.duration,
                     user_id=task.user_id,
+                    task_id=task.id,
                 )
                 task.result_path = out_path
                 task.status = TaskStatus.completed

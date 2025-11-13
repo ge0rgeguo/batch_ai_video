@@ -24,5 +24,6 @@ class QueryResult:
     status: RemoteTaskStatus
     video_url: Optional[str] = None
     error: Optional[str] = None
+    progress: Optional[str] = None
 
 

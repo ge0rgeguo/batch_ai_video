@@ -161,10 +161,24 @@ def query_task(*, api_key: str, task_id: str) -> QueryResult:
     if not video_url:
         video_url = data.get("video_url") or data.get("result_url")
 
+    # 提取进度信息：优先从外层 progress 获取，格式如 "50%"
+    progress = data.get("progress")
+    if not progress and "data" in data and isinstance(data.get("data"), dict):
+        # 也尝试从 data.progress 获取数字进度，转换为百分比
+        data_progress = data["data"].get("progress")
+        if data_progress is not None:
+            try:
+                # 如果是数字（0-100），转换为百分比字符串
+                progress_num = int(data_progress)
+                progress = f"{progress_num}%"
+            except (ValueError, TypeError):
+                pass
+
     return QueryResult(
         status=RemoteTaskStatus(status),
         video_url=video_url,
         error=data.get("error") or data.get("message") or data.get("fail_reason"),
+        progress=progress,
     )
 
 

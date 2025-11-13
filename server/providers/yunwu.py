@@ -55,6 +55,7 @@ def call_yunwu_generate(
     size: str,
     duration: int,
     user_id: int,
+    task_id: Optional[str] = None,
 ) -> str:
     """Create remote task on Yunwu and poll until completion, then download the video.
 
@@ -118,8 +119,23 @@ def call_yunwu_generate(
     while time.time() < deadline:
         try:
             q = query_task(api_key=api_key, task_id=created.task_id)
-            print(f"[yunwu] poll: status={q.status.value} video_url={q.video_url or 'None'} error={q.error or 'None'}")
+            print(f"[yunwu] poll: status={q.status.value} video_url={q.video_url or 'None'} error={q.error or 'None'} progress={q.progress or 'None'}")
             last_status = q.status
+            
+            # 更新任务进度到数据库（如果提供了task_id）
+            if task_id and q.progress:
+                try:
+                    from ..models import Task
+                    with SessionLocal() as db:
+                        db_task = db.get(Task, task_id)
+                        if db_task:
+                            db_task.progress = q.progress
+                            db.add(db_task)
+                            db.commit()
+                            print(f"[yunwu] updated task {task_id} progress to {q.progress}")
+                except Exception as pe:
+                    print(f"[yunwu] failed to update progress: {pe}")
+            
             if q.status == RemoteTaskStatus.completed and q.video_url:
                 # 按需返回远端可访问URL（由前端直接打开），避免本地下载再提供链接
                 return q.video_url

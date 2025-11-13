@@ -183,10 +183,16 @@ export function renderTaskDetail(batchId, tasks) {
 
     const resultUrl = resolveResultUrl(task.result_path);
     const resultHtml = buildResultCell(task, resultUrl);
+    
+    // 构建状态显示，如果是 in_progress 且有 progress 字段，显示进度
+    let statusDisplay = statusMeta.label;
+    if (task.status === 'in_progress' && task.progress) {
+      statusDisplay = `${statusMeta.label} (${task.progress})`;
+    }
 
     row.innerHTML = `
       <td style="text-align:center;">${index + 1}</td>
-      <td><span class="${statusMeta.className}">${statusMeta.label}</span></td>
+      <td><span class="${statusMeta.className}">${statusDisplay}</span></td>
       <td>${resultHtml}</td>
       <td>
         <div class="action-buttons">

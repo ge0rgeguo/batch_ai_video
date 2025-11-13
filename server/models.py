@@ -122,6 +122,7 @@ class Task(Base):
 
     status = Column(Enum(TaskStatus), default=TaskStatus.pending, nullable=False)
     error_summary = Column(Text, nullable=True)
+    progress = Column(String(16), nullable=True)  # 进度信息，如 "50%"
     retries = Column(Integer, default=0, nullable=False)
     rerun_of_task_id = Column(String(36), nullable=True, index=True)
 

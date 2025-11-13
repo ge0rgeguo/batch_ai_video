@@ -68,6 +68,7 @@ class TaskRead(BaseModel):
     status: str
     result_path: Optional[str] = None
     error_summary: Optional[str] = None
+    progress: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

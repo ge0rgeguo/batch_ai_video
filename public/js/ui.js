@@ -12,6 +12,7 @@ const selectors = {
   thumb: () => document.getElementById('thumb'),
   removeImageBtn: () => document.getElementById('remove-img'),
   imageInput: () => document.getElementById('image-file'),
+  imageFilename: () => document.getElementById('image-filename'),
   promptInput: () => document.getElementById('prompt'),
   modelSelect: () => document.getElementById('model'),
   orientationSelect: () => document.getElementById('orientation'),
@@ -82,9 +83,12 @@ export function updateDurationOptions(model) {
   }
 }
 
-export function setImagePreview(src) {
+export function setImagePreview(src, filename = null) {
   const thumb = selectors.thumb();
   const removeBtn = selectors.removeImageBtn();
+  const filenameDiv = selectors.imageFilename();
+  const fileInput = selectors.imageInput();
+  
   if (thumb) {
     thumb.src = src;
     thumb.classList.remove('hidden');
@@ -92,12 +96,29 @@ export function setImagePreview(src) {
   if (removeBtn) {
     removeBtn.classList.remove('hidden');
   }
+  
+  // 显示文件名
+  if (filenameDiv) {
+    if (filename) {
+      filenameDiv.textContent = `📎 ${filename}`;
+      filenameDiv.classList.remove('hidden');
+    } else {
+      filenameDiv.classList.add('hidden');
+    }
+  }
+  
+  // 隐藏文件输入框（当显示已上传的图片时）
+  if (fileInput && filename) {
+    fileInput.classList.add('hidden');
+  }
 }
 
 export function clearImagePreview() {
   const thumb = selectors.thumb();
   const removeBtn = selectors.removeImageBtn();
   const imageInput = selectors.imageInput();
+  const filenameDiv = selectors.imageFilename();
+  
   if (thumb) {
     thumb.src = '';
     thumb.classList.add('hidden');
@@ -107,6 +128,11 @@ export function clearImagePreview() {
   }
   if (imageInput) {
     imageInput.value = '';
+    imageInput.classList.remove('hidden');
+  }
+  if (filenameDiv) {
+    filenameDiv.textContent = '';
+    filenameDiv.classList.add('hidden');
   }
 }
 
@@ -172,7 +198,7 @@ export function renderTaskDetail(batchId, tasks) {
 
   tbody.innerHTML = '';
   if (!tasks.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#718096;padding:20px;">暂无任务</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#718096;padding:20px;">暂无任务</td></tr>';
     return;
   }
 
@@ -189,10 +215,14 @@ export function renderTaskDetail(batchId, tasks) {
     if (task.status === 'in_progress' && task.progress) {
       statusDisplay = `${statusMeta.label} (${task.progress})`;
     }
+    
+    // 计算任务用时
+    const taskDuration = formatDuration(task.created_at, task.updated_at, task.status);
 
     row.innerHTML = `
       <td style="text-align:center;">${index + 1}</td>
       <td><span class="${statusMeta.className}">${statusDisplay}</span></td>
+      <td style="text-align:center;">${taskDuration}</td>
       <td>${resultHtml}</td>
       <td>
         <div class="action-buttons">
@@ -294,10 +324,15 @@ function buildBatchRow(batch, displayIndex, expanded) {
     : '<span class="text-muted">-</span>';
 
   const statusHtml = buildStatusCell(batch);
+  
+  // 计算批次的完成用时（批次完成时：completed == total）
+  const batchStatus = batch.completed === batch.total && batch.total > 0 ? 'completed' : 'in_progress';
+  const batchDuration = formatDuration(batch.created_at, batch.updated_at, batchStatus);
 
   row.innerHTML = `
     <td>${displayIndex}</td>
     <td>${formatDateTime(batch.created_at)}</td>
+    <td style="text-align:center;">${batchDuration}</td>
     ${promptHtml}
     <td style="text-align:center;">${imageHtml}</td>
     ${statusHtml}
@@ -320,7 +355,7 @@ function buildTaskDetailShell(batchId) {
   detailRow.className = 'tasks-detail-row';
   detailRow.dataset.batchId = batchId;
   detailRow.innerHTML = `
-    <td colspan="6" class="tasks-detail-cell">
+    <td colspan="7" class="tasks-detail-cell">
       <div class="tasks-inner-container">
         <div class="tasks-actions">
           <button type="button" class="btn btn-secondary" data-action="retry-failed" data-batch-id="${batchId}">重试失败</button>
@@ -331,7 +366,8 @@ function buildTaskDetailShell(batchId) {
             <tr>
               <th style="width:50px;">序号</th>
               <th style="width:160px;">状态</th>
-              <th style="width:430px;">结果</th>
+              <th style="width:100px;">用时</th>
+              <th style="width:380px;">结果</th>
               <th style="width:240px;">操作</th>
             </tr>
           </thead>
@@ -401,6 +437,41 @@ function escapeHtml(str = '') {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function formatDuration(createdAt, updatedAt, status) {
+  // 只有已完成的任务才计算用时
+  if (status !== 'completed') {
+    return '-';
+  }
+  
+  const created = new Date(createdAt);
+  const updated = new Date(updatedAt);
+  
+  if (Number.isNaN(created.getTime()) || Number.isNaN(updated.getTime())) {
+    return '-';
+  }
+  
+  const diffMs = updated.getTime() - created.getTime();
+  if (diffMs < 0) {
+    return '-';
+  }
+  
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  
+  const parts = [];
+  if (hours > 0) {
+    parts.push(`${hours}时`);
+  }
+  if (minutes > 0 || hours > 0) {
+    parts.push(`${minutes}分`);
+  }
+  parts.push(`${seconds}秒`);
+  
+  return parts.join('');
 }
 
 function resolveResultUrl(path) {

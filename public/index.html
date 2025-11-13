@@ -7,47 +7,48 @@
   <link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
-  <div id="toast-container"></div>
+<div id="toast-container"></div>
 
-  <div id="login-container" class="login-container">
+<div id="login-container" class="login-container">
     <form id="login-form" class="login-card" autocomplete="off" novalidate>
-      <h1>🎬 AI视频生成平台</h1>
-      <div class="form-group">
+    <h1>🎬 AI视频生成平台</h1>
+    <div class="form-group">
         <label for="login-username">用户名</label>
         <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username" />
-      </div>
-      <div class="form-group">
+    </div>
+    <div class="form-group">
         <label for="login-password">密码</label>
         <input type="password" id="login-password" name="password" placeholder="请输入密码" autocomplete="current-password" />
-      </div>
+    </div>
       <button type="submit" class="btn btn-primary" id="login-submit">登录</button>
-      <div class="error-msg" id="login-error"></div>
+    <div class="error-msg" id="login-error"></div>
     </form>
-  </div>
+</div>
 
-  <div id="app-container" class="container hidden">
-    <header>
-      <h1>🎬 AI视频批量生成</h1>
-      <div class="user-info">
-        <span id="user-display"></span>
+<div id="app-container" class="container hidden">
+  <header>
+    <h1>🎬 AI视频批量生成</h1>
+    <div class="user-info">
+      <span id="user-display"></span>
         <span id="user-credits" class="text-muted"></span>
         <button type="button" class="btn btn-secondary" id="logout-btn">退出登录</button>
-      </div>
-    </header>
+    </div>
+  </header>
 
     <div class="card">
       <div class="three-col-layout">
         <div class="col-image">
           <h3 class="section-title">图片</h3>
           <input type="file" id="image-file" class="image-input" accept="image/png, image/jpeg" />
+          <div id="image-filename" class="image-filename hidden"></div>
           <img id="thumb" class="hidden" alt="上传预览" />
           <button type="button" class="btn btn-secondary remove-btn hidden" id="remove-img">删除图片</button>
-        </div>
+    </div>
 
         <div class="col-prompt">
           <h3 class="section-title">提示词 Prompt</h3>
           <textarea id="prompt" class="prompt-textarea" placeholder="请输入视频生成提示词（必填，≤10000字符）"></textarea>
-        </div>
+    </div>
 
         <div class="col-params">
           <h3 class="section-title">模型参数</h3>
@@ -74,11 +75,11 @@
           </div>
           <div class="param-group">
             <label for="duration">时长</label>
-            <select id="duration"></select>
+          <select id="duration"></select>
           </div>
           <div class="param-group">
             <label for="num-videos">视频数量</label>
-            <input type="number" id="num-videos" value="1" min="1" max="50" />
+          <input type="number" id="num-videos" value="1" min="1" max="50" />
           </div>
         </div>
       </div>
@@ -95,7 +96,8 @@
           <tr>
             <th style="width:50px;">序号</th>
             <th style="width:160px;">创建时间</th>
-            <th style="width:350px;">提示词</th>
+            <th style="width:100px;">完成用时</th>
+            <th style="width:300px;">提示词</th>
             <th style="width:80px;">图片</th>
             <th style="width:160px;">状态</th>
             <th style="width:240px;">操作</th>

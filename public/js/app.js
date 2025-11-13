@@ -281,7 +281,7 @@ async function handleRefillBatch(batchId) {
   if (batch.image_path) {
     setUploadedImagePath(batch.image_path);
     clearPreviewObjectUrl();
-    setImagePreview(`/uploads/${batch.image_path}`);
+    setImagePreview(`/uploads/${batch.image_path}`, batch.image_path);
   } else {
     clearUploadedImagePath();
     clearPreviewObjectUrl();
@@ -361,7 +361,7 @@ async function handleImageSelected(file) {
   const objectUrl = URL.createObjectURL(file);
   setPreviewObjectUrl(objectUrl);
   setUploadedImagePath(response.data.path);
-  setImagePreview(objectUrl);
+  setImagePreview(objectUrl, file.name);
   showToast('图片上传成功', 'success');
 }
 

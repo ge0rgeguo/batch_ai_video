@@ -311,41 +311,71 @@ function buildBatchRow(batch, displayIndex, expanded) {
   row.className = `batch-row${expanded ? ' expanded' : ''}`;
   row.dataset.batchId = batch.id;
 
-  const promptPreview = buildPromptPreview(batch.prompt);
+  // 序号
+  const indexCell = document.createElement('td');
+  indexCell.textContent = displayIndex;
+  row.appendChild(indexCell);
 
-  const imageHtml = batch.image_path
-    ? `<img src="/uploads/${encodeURIComponent(batch.image_path)}" class="thumb-small" alt="图片预览" />`
-    : '<span class="text-muted">-</span>';
+  // 创建时间
+  const createdCell = document.createElement('td');
+  createdCell.textContent = formatDateTime(batch.created_at);
+  row.appendChild(createdCell);
 
-  const statusMeta = resolveBatchStatus(batch);
-  
-  // 计算批次的完成用时（批次完成时：completed == total）
+  // 完成用时
+  const durationCell = document.createElement('td');
+  durationCell.style.textAlign = 'center';
   const batchStatus = batch.completed === batch.total && batch.total > 0 ? 'completed' : 'in_progress';
-  const batchDuration = formatDuration(batch.created_at, batch.updated_at, batchStatus);
+  durationCell.textContent = formatDuration(batch.created_at, batch.updated_at, batchStatus);
+  row.appendChild(durationCell);
 
-  row.innerHTML = `
-    <td>${displayIndex}</td>
-    <td>${formatDateTime(batch.created_at)}</td>
-    <td style="text-align:center;">${batchDuration}</td>
-    <td class="prompt-cell" data-full-prompt="${escapeHtml(batch.prompt)}">
-      <div class="prompt-preview">${promptPreview}</div>
-      <div class="prompt-tooltip"></div>
-    </td>
-    <td style="text-align:center;">${imageHtml}</td>
-    <td class="batch-status-cell">
-      <span class="${statusMeta.className}" style="color:${statusMeta.color};font-weight:600;">${statusMeta.label}</span><br />
-      <small class="text-muted">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed}</small>
-    </td>
-    <td>
-      <div class="action-buttons">
-        <button type="button" class="btn btn-secondary" data-action="toggle-detail" data-batch-id="${batch.id}" aria-expanded="${expanded}">
-          <span class="expand-icon ${expanded ? 'expanded' : ''}">▶</span>${expanded ? '收起' : '查看'}
-        </button>
-        <button type="button" class="btn btn-primary" data-action="refill-batch" data-batch-id="${batch.id}">再来一批</button>
-        <button type="button" class="btn btn-danger" data-action="delete-batch" data-batch-id="${batch.id}">删除</button>
-      </div>
-    </td>
+  // 提示词单元格
+  const promptCell = document.createElement('td');
+  promptCell.className = 'prompt-cell';
+  promptCell.dataset.fullPrompt = batch.prompt || '';
+  const preview = document.createElement('div');
+  preview.className = 'prompt-preview';
+  preview.innerHTML = buildPromptPreview(batch.prompt);
+  const tooltip = document.createElement('div');
+  tooltip.className = 'prompt-tooltip';
+  promptCell.appendChild(preview);
+  promptCell.appendChild(tooltip);
+  row.appendChild(promptCell);
+
+  // 图片单元格
+  const imageCell = document.createElement('td');
+  imageCell.style.textAlign = 'center';
+  if (batch.image_path) {
+    const img = document.createElement('img');
+    img.src = `/uploads/${encodeURIComponent(batch.image_path)}`;
+    img.className = 'thumb-small';
+    img.alt = '图片预览';
+    imageCell.appendChild(img);
+  } else {
+    const placeholder = document.createElement('span');
+    placeholder.className = 'text-muted';
+    placeholder.textContent = '-';
+    imageCell.appendChild(placeholder);
+  }
+  row.appendChild(imageCell);
+
+  // 状态单元格
+  const statusCell = document.createElement('td');
+  statusCell.className = 'batch-status-cell';
+  statusCell.innerHTML = buildStatusCellContent(batch);
+  row.appendChild(statusCell);
+
+  // 操作单元格
+  const actionCell = document.createElement('td');
+  actionCell.innerHTML = `
+    <div class="action-buttons">
+      <button type="button" class="btn btn-secondary" data-action="toggle-detail" data-batch-id="${batch.id}" aria-expanded="${expanded}">
+        <span class="expand-icon ${expanded ? 'expanded' : ''}">▶</span>${expanded ? '收起' : '查看'}
+      </button>
+      <button type="button" class="btn btn-primary" data-action="refill-batch" data-batch-id="${batch.id}">再来一批</button>
+      <button type="button" class="btn btn-danger" data-action="delete-batch" data-batch-id="${batch.id}">删除</button>
+    </div>
   `;
+  row.appendChild(actionCell);
 
   return row;
 }
@@ -379,20 +409,18 @@ function buildTaskDetailShell(batchId) {
   return detailRow;
 }
 
-function buildStatusCell(batch) {
+function buildStatusCellContent(batch) {
   const meta = resolveBatchStatus(batch);
   return `
-    <td class="batch-status-cell">
-      <span class="${meta.className}" style="color:${meta.color};font-weight:600;">${meta.label}</span><br />
-      <small class="text-muted">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed}</small>
-    </td>
+    <span class="${meta.className}" style="color:${meta.color};font-weight:600;">${meta.label}</span><br />
+    <small class="text-muted">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed}</small>
   `;
 }
 
 function updateBatchStatusCell(row, batch) {
   const cell = row.querySelector('.batch-status-cell');
   if (!cell) return;
-  cell.outerHTML = buildStatusCell(batch);
+  cell.innerHTML = buildStatusCellContent(batch);
 }
 
 function resolveBatchStatus(batch) {

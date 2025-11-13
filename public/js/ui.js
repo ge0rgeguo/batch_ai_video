@@ -317,7 +317,7 @@ function buildBatchRow(batch, displayIndex, expanded) {
     ? `<img src="/uploads/${encodeURIComponent(batch.image_path)}" class="thumb-small" alt="图片预览" />`
     : '<span class="text-muted">-</span>';
 
-  const statusHtml = buildStatusCell(batch);
+  const statusMeta = resolveBatchStatus(batch);
   
   // 计算批次的完成用时（批次完成时：completed == total）
   const batchStatus = batch.completed === batch.total && batch.total > 0 ? 'completed' : 'in_progress';
@@ -332,7 +332,10 @@ function buildBatchRow(batch, displayIndex, expanded) {
       <div class="prompt-tooltip"></div>
     </td>
     <td style="text-align:center;">${imageHtml}</td>
-    ${statusHtml}
+    <td class="batch-status-cell">
+      <span class="${statusMeta.className}" style="color:${statusMeta.color};font-weight:600;">${statusMeta.label}</span><br />
+      <small class="text-muted">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed}</small>
+    </td>
     <td>
       <div class="action-buttons">
         <button type="button" class="btn btn-secondary" data-action="toggle-detail" data-batch-id="${batch.id}" aria-expanded="${expanded}">

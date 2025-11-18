@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>做视频 · AI 视频内容生产平台</title>
+    <style>
+      :root {
+        --primary: #667eea;
+        --primary-dark: #5a67d8;
+        --primary-gradient: linear-gradient(135deg, #667eea, #764ba2);
+        --accent: #a78bfa;
+        --text-main: #1f2143;
+        --text-sub: #4c4f6b;
+        --surface: rgba(255, 255, 255, 0.96);
+        --surface-soft: rgba(255, 255, 255, 0.9);
+        --border: rgba(103, 126, 234, 0.18);
+        --shadow-card: 0 20px 50px rgba(100, 116, 205, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "HarmonyOS Sans", "PingFang SC", "Microsoft YaHei", Arial,
+          sans-serif;
+        color: var(--text-main);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding-bottom: 60px;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(18px);
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.18);
+      }
+
+      .nav-container {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 0.5px;
+      }
+
+      .brand-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: var(--primary-gradient);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        color: #ffffff;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .nav-cta {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .contact-wrapper {
+        position: relative;
+        display: inline-flex;
+      }
+      .contact-popover {
+        position: absolute;
+        top: calc(100% + 12px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 16px;
+        border-radius: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-card);
+        width: 220px;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 20;
+      }
+      .contact-popover img {
+        width: 100%;
+        border-radius: 12px;
+      }
+      .contact-popover span {
+        font-size: 12px;
+        color: var(--text-sub);
+        text-align: center;
+      }
+      .contact-wrapper.show .contact-popover {
+        display: flex;
+      }
+
+      .btn {
+        padding: 10px 24px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      .btn-secondary {
+        border-color: var(--border);
+        color: var(--primary);
+        background: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+      }
+
+      .btn-secondary:hover {
+        border-color: var(--primary);
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--primary-dark);
+      }
+
+      .btn-primary {
+        background: var(--primary-gradient);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 14px 36px rgba(102, 126, 234, 0.45);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 42px rgba(118, 75, 162, 0.4);
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 32px 72px;
+        min-height: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 36px;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 40px 32px;
+        border-radius: 28px;
+        background: var(--surface);
+        box-shadow: var(--shadow-card);
+      }
+
+      .hero h1 {
+        font-size: 48px;
+        line-height: 1.25;
+        margin: 0 auto;
+        max-width: 720px;
+        color: var(--primary);
+        white-space: nowrap;
+      }
+
+      .models-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 32px;
+        padding: 32px 32px 36px;
+        display: grid;
+        gap: 28px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .models-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+      }
+
+      .model-card {
+        background: var(--surface-soft);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        padding: 28px;
+        display: grid;
+        gap: 18px;
+        box-shadow: 0 18px 44px rgba(102, 126, 234, 0.25);
+        min-height: 100%;
+      }
+
+      .model-label {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        min-height: 28px;
+        color: var(--primary-dark);
+      }
+
+      .model-meta {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .meta-chip {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: rgba(102, 126, 234, 0.12);
+        border: 1px solid rgba(102, 126, 234, 0.35);
+        font-size: 12px;
+        letter-spacing: 0.4px;
+        color: var(--primary);
+        min-height: 38px;
+        text-align: center;
+      }
+
+      .model-params {
+        margin: 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 10px;
+        color: var(--text-sub);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .model-note {
+        margin: 0;
+        color: var(--primary);
+        font-size: 14px;
+      }
+
+      footer {
+        margin-top: 100px;
+        padding: 40px 0 60px;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: 0 -12px 30px rgba(102, 126, 234, 0.15);
+      }
+
+      .footer-inner {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 24px;
+        color: var(--text-sub);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          padding: 36px 20px 60px;
+          gap: 28px;
+        }
+        .hero h1 {
+          font-size: 38px;
+        }
+        .models-section {
+          padding: 28px 24px;
+        }
+        .models-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .nav-container {
+          flex-direction: column;
+          gap: 14px;
+          align-items: flex-start;
+        }
+        .hero h1 {
+          font-size: 30px;
+        }
+        .models-section {
+          padding: 24px 18px;
+        }
+        .model-label {
+          white-space: normal;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="nav-container">
+        <div class="brand">
+          <div class="brand-badge">Z</div>
+          做视频 · AI 视频内容生产平台
+        </div>
+        <div class="nav-cta">
+          <div class="contact-wrapper" id="contactTrigger">
+            <button class="btn btn-secondary" type="button">联系客服</button>
+            <div class="contact-popover" role="dialog" aria-hidden="true">
+              <img src="./img/contact-qr.png" alt="联系客服二维码" />
+              <span>微信扫码联系：齐奥至</span>
+            </div>
+          </div>
+          <a class="btn btn-secondary" href="/index.html">登录</a>
+          <a class="btn btn-primary" href="/register.html">立即注册</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>批量制作，高质量，无水印 AI 视频</h1>
+      </section>
+
+      <section class="models-section">
+        <div class="models-grid">
+          <article class="model-card">
+            <div class="model-label">Sora2</div>
+            <div class="model-meta">
+              <span class="meta-chip">720p 输出</span>
+              <span class="meta-chip">10s / 15s</span>
+              <span class="meta-chip">批量 50 条</span>
+            </div>
+            <ul class="model-params">
+              <li>方向：横向 16:9、纵向 9:16</li>
+              <li>尺寸：720p</li>
+              <li>时长：10秒 / 15秒</li>
+              <li>积分：10分 / 15分</li>
+              <li>批量：同时支持10个任务，单个任务支持50条</li>
+            </ul>
+            <p class="model-note">适合日常批量生成、快速复刻商品短视频。</p>
+          </article>
+          <article class="model-card">
+            <div class="model-label">Sora2 Pro</div>
+            <div class="model-meta">
+              <span class="meta-chip">1080p 输出</span>
+              <span class="meta-chip">最长 25s</span>
+              <span class="meta-chip">批量 50 条</span>
+            </div>
+            <ul class="model-params">
+              <li>方向：横向 16:9、纵向 9:16</li>
+              <li>尺寸：1080p</li>
+              <li>时长：10秒 / 15秒 / 25秒</li>
+              <li>积分：50分 / 75分 / 100分</li>
+              <li>批量：同时支持10个任务，单个任务支持50条</li>
+            </ul>
+            <p class="model-note">适合高质量投放素材、重点活动主视频等场景。</p>
+          </article>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <div class="footer-inner" style="justify-content:center; text-align:center;">
+        <div>© 2025 做视频 · AI 视频内容生产平台</div>
+      </div>
+    </footer>
+    <script>
+      (function () {
+        const wrapper = document.getElementById("contactTrigger");
+        if (!wrapper) return;
+        const popover = wrapper.querySelector(".contact-popover");
+        const toggle = (show) => {
+          wrapper.classList.toggle("show", show);
+          popover?.setAttribute("aria-hidden", show ? "false" : "true");
+        };
+        wrapper.addEventListener("mouseenter", () => toggle(true));
+        wrapper.addEventListener("mouseleave", () => toggle(false));
+        wrapper.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggle(!wrapper.classList.contains("show"));
+        });
+        document.addEventListener("click", () => toggle(false));
+      })();
+    </script>
+  </body>
+</html>
+
+

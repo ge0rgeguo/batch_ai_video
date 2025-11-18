@@ -10,4 +10,8 @@ nest_asyncio
 requests
 python-multipart
 python-dotenv
+alibabacloud-dypnsapi20170525
+alibabacloud-credentials
+alibabacloud-tea-openapi
+alibabacloud-tea-util
 

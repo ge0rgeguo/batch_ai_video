@@ -59,6 +59,18 @@ class Settings:
     POLL_INTERVAL_SECONDS: int = int(os.environ.get("POLL_INTERVAL_SECONDS", "3"))
     MAX_POLL_SECONDS: int = int(os.environ.get("MAX_POLL_SECONDS", "900"))  # 15 min
 
+    # Aliyun SMS authentication service (SendSmsVerifyCode / CheckSmsVerifyCode)
+    ALIYUN_SMS_ENDPOINT: str = os.environ.get("ALIYUN_SMS_ENDPOINT", "https://dypnsapi.aliyuncs.com")
+    ALIYUN_SMS_REGION_ID: str = os.environ.get("ALIYUN_SMS_REGION_ID", "ap-southeast-1")
+    ALIYUN_SMS_ACCESS_KEY_ID: Optional[str] = os.environ.get("ALIYUN_SMS_ACCESS_KEY_ID")
+    ALIYUN_SMS_ACCESS_KEY_SECRET: Optional[str] = os.environ.get("ALIYUN_SMS_ACCESS_KEY_SECRET")
+    ALIYUN_SMS_SIGN_NAME: Optional[str] = os.environ.get("ALIYUN_SMS_SIGN_NAME")
+    ALIYUN_SMS_TEMPLATE_CODE: Optional[str] = os.environ.get("ALIYUN_SMS_TEMPLATE_CODE")
+    SMS_CODE_EXPIRE_SECONDS: int = int(os.environ.get("SMS_CODE_EXPIRE_SECONDS", "300"))
+    SMS_CODE_RESEND_INTERVAL: int = int(os.environ.get("SMS_CODE_RESEND_INTERVAL", "60"))
+    SMS_CODE_MAX_PER_MOBILE_PER_DAY: int = int(os.environ.get("SMS_CODE_MAX_PER_MOBILE_PER_DAY", "15"))
+    SMS_CODE_HASH_SALT: str = os.environ.get("SMS_CODE_HASH_SALT", "aliyun-sms-salt")
+
 
 settings = Settings()
 

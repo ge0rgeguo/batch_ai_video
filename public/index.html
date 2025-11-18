@@ -10,19 +10,152 @@
 <div id="toast-container"></div>
 
 <div id="login-container" class="login-container">
-    <form id="login-form" class="login-card" autocomplete="off" novalidate>
-    <h1>🎬 AI视频生成平台</h1>
-    <div class="form-group">
-        <label for="login-username">用户名</label>
-        <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username" />
-    </div>
-    <div class="form-group">
-        <label for="login-password">密码</label>
-        <input type="password" id="login-password" name="password" placeholder="请输入密码" autocomplete="current-password" />
-    </div>
-      <button type="submit" class="btn btn-primary" id="login-submit">登录</button>
-    <div class="error-msg" id="login-error"></div>
-    </form>
+  <header class="landing-header">
+    <nav class="nav-container">
+      <div class="brand">
+        <div class="brand-badge">Z</div>
+        做视频 · AI 视频内容生产平台
+      </div>
+      <div class="nav-cta">
+        <div class="contact-wrapper" id="contactTrigger">
+          <button class="btn btn-secondary" type="button">联系客服</button>
+          <div class="contact-popover" role="dialog" aria-hidden="true">
+            <img src="/img/contact-qr.png" alt="联系客服二维码" />
+            <span>微信扫码联系：齐奥至</span>
+          </div>
+        </div>
+        <a class="btn btn-secondary" href="#auth-login">登录</a>
+        <a class="btn btn-primary" href="#auth-register">注册</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="landing-main">
+    <section class="hero">
+      <h1>批量制作，高质量，无水印 AI 视频</h1>
+    </section>
+
+    <section class="models-section">
+      <div class="models-grid">
+        <article class="model-card">
+          <div class="model-label">Sora2</div>
+          <div class="model-meta">
+            <span class="meta-chip">720p 输出</span>
+            <span class="meta-chip">10s / 15s</span>
+            <span class="meta-chip">批量 50 条</span>
+          </div>
+          <ul class="model-params">
+            <li>方向：横向 16:9、纵向 9:16</li>
+            <li>尺寸：720p</li>
+            <li>时长：10秒 / 15秒</li>
+            <li>积分：10分 / 15分</li>
+            <li>批量：同时支持10个任务，单个任务支持50条</li>
+          </ul>
+          <p class="model-note">适合日常批量生成、快速复刻商品短视频。</p>
+        </article>
+        <article class="model-card">
+          <div class="model-label">Sora2 Pro</div>
+          <div class="model-meta">
+            <span class="meta-chip">1080p 输出</span>
+            <span class="meta-chip">最长 25s</span>
+            <span class="meta-chip">批量 50 条</span>
+          </div>
+          <ul class="model-params">
+            <li>方向：横向 16:9、纵向 9:16</li>
+            <li>尺寸：1080p</li>
+            <li>时长：10秒 / 15秒 / 25秒</li>
+            <li>积分：50分 / 75分 / 100分</li>
+            <li>批量：同时支持10个任务，单个任务支持50条</li>
+          </ul>
+          <p class="model-note">适合高质量投放素材、重点活动主视频等场景。</p>
+        </article>
+      </div>
+      <p class="models-footnote">
+        平台按「图片 / Prompt / 生成设置 / 任务结果」四列展示全流程；创建批次使用 Idempotency-Key 防重复提交，失败任务支持一键重试并可打包下载生成结果。
+      </p>
+    </section>
+
+    <section class="landing-auth" id="auth-login">
+      <div class="auth-columns">
+        <div class="login-pane">
+          <h2 class="auth-card-title">登录到 AI 视频生成平台</h2>
+          <div class="login-card" id="login-card">
+            <div class="login-tabs" id="login-tabs">
+              <button type="button" class="active" data-login-mode="sms">手机号快捷登录</button>
+              <button type="button" data-login-mode="password">账号密码登录</button>
+            </div>
+
+            <form id="sms-login-form" class="login-form" autocomplete="off" novalidate>
+              <div class="form-group">
+                <label for="sms-mobile">手机号</label>
+                <input type="tel" id="sms-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13" />
+              </div>
+              <div class="form-group">
+                <label for="sms-code">验证码</label>
+                <div class="sms-inline">
+                  <input type="text" id="sms-code" name="code" placeholder="请输入短信验证码" maxlength="6" />
+                  <button type="button" class="btn btn-secondary" id="sms-send-btn">获取验证码</button>
+                </div>
+                <div class="sms-countdown hidden" id="sms-countdown"></div>
+              </div>
+              <button type="submit" class="btn btn-primary" id="sms-login-submit">登录 / 注册</button>
+              <div class="error-msg" id="sms-login-error"></div>
+            </form>
+
+            <form id="login-form" class="login-form hidden" autocomplete="off" novalidate>
+              <div class="form-group">
+                <label for="login-username">用户名</label>
+                <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username" />
+              </div>
+              <div class="form-group">
+                <label for="login-password">密码</label>
+                <input type="password" id="login-password" name="password" placeholder="请输入密码" autocomplete="current-password" />
+              </div>
+              <button type="submit" class="btn btn-primary" id="login-submit">登录</button>
+              <div class="error-msg" id="login-error"></div>
+            </form>
+          </div>
+        </div>
+
+        <div class="register-card" id="auth-register">
+          <h2 class="auth-card-title">快速注册账号</h2>
+          <form id="register-form" autocomplete="off" novalidate>
+            <div class="form-group">
+              <label for="register-mobile">手机号</label>
+              <input
+                type="tel"
+                id="register-mobile"
+                name="mobile"
+                placeholder="请输入 11 位手机号"
+                maxlength="13"
+              />
+            </div>
+            <div class="form-group">
+              <label for="register-code">验证码</label>
+              <div class="sms-inline">
+                <input
+                  type="text"
+                  id="register-code"
+                  name="code"
+                  placeholder="请输入短信验证码"
+                  maxlength="6"
+                />
+                <button type="button" class="btn btn-secondary" id="register-send-btn">
+                  获取验证码
+                </button>
+              </div>
+              <div class="sms-countdown hidden" id="register-countdown"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="register-submit">完成注册</button>
+            <div class="error-msg" id="register-error"></div>
+          </form>
+          <div style="text-align:center; margin-top:16px;">
+            已有账号？<a href="#auth-login" class="btn-link" style="margin-top:0;">直接登录</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <div id="app-container" class="container hidden">
@@ -115,5 +248,24 @@
   </div>
 
     <script type="module" src="/js/app.js?v=20251113-1"></script>
+    <script type="module" src="/js/register.js?v=20251113-1"></script>
+    <script>
+      (function () {
+        const wrapper = document.getElementById('contactTrigger');
+        if (!wrapper) return;
+        const popover = wrapper.querySelector('.contact-popover');
+        const toggle = (show) => {
+          wrapper.classList.toggle('show', show);
+          popover?.setAttribute('aria-hidden', show ? 'false' : 'true');
+        };
+        wrapper.addEventListener('mouseenter', () => toggle(true));
+        wrapper.addEventListener('mouseleave', () => toggle(false));
+        wrapper.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggle(!wrapper.classList.contains('show'));
+        });
+        document.addEventListener('click', () => toggle(false));
+      })();
+    </script>
 </body>
 </html>

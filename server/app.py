@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
+import hashlib
+import re
+import secrets
+from datetime import datetime, timedelta
 from io import BytesIO
 import time
 import uuid
@@ -19,7 +22,7 @@ from sqlalchemy.orm import Session
 from .batch_utils import recompute_batch_counters
 from .cleanup import cleanup_loop
 from .db import get_db, init_db
-from .models import Batch, IdempotencyKey, Task, TaskStatus, User, CreditTransaction
+from .models import Batch, IdempotencyKey, Task, TaskStatus, User, CreditTransaction, SmsVerifySession
 from .queue import executor
 from .rate_limit import rate_limiter
 from .pricing import get_unit_cost
@@ -31,6 +34,8 @@ from .schemas import (
     LoginRequest,
     MeResponse,
     TaskRead,
+    SmsSendRequest,
+    SmsVerifyRequest,
     fail,
     ok,
 )
@@ -45,8 +50,44 @@ from .security import (
 from .settings import settings
 from .crypto import encrypt_text
 from .models import UserApiKey
+from .providers.aliyun_sms import client as sms_client, AliyunSmsError
+from .sms_rate_limit import ensure_sms_rate_limit
 
-app = FastAPI(title="Video Generation Batch API")
+app = FastAPI(title="Video Generation Batch API", docs_url=None, redoc_url=None)
+
+
+MOBILE_REGEX = re.compile(r"^(?:\+?86)?1\d{10}$")
+
+
+def _normalize_mobile(raw: str) -> str:
+    mobile = (raw or "").strip().replace(" ", "")
+    if MOBILE_REGEX.fullmatch(mobile) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="请输入正确的手机号（仅支持中国大陆 11 位手机号）",
+        )
+    if mobile.startswith("+86"):
+        mobile = mobile[3:]
+    if mobile.startswith("86") and len(mobile) == 13:
+        mobile = mobile[2:]
+    return mobile
+
+
+def _hash_sms_code(mobile: str, session_id: str, code: str) -> str:
+    payload = f"{settings.SMS_CODE_HASH_SALT}:{mobile}:{session_id}:{code}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _generate_sms_code() -> str:
+    return f"{secrets.randbelow(10**6):06d}"
+
+
+def _ensure_sms_configured() -> None:
+    if not settings.ALIYUN_SMS_ACCESS_KEY_ID or not settings.ALIYUN_SMS_ACCESS_KEY_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="短信服务未配置，请联系管理员",
+        )
 
 
 def _ensure_dirs() -> None:
@@ -134,7 +175,15 @@ def _get_user_credits(db: Session, user_id: int) -> int:
 @app.get("/api/me")
 def me(db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> ApiResponse[MeResponse]:
     credits = _get_user_credits(db, user.id)
-    return ok(MeResponse(user_id=user.id, username=user.username, is_admin=user.is_admin, credits=credits))
+    return ok(
+        MeResponse(
+            user_id=user.id,
+            username=user.username,
+            is_admin=user.is_admin,
+            credits=credits,
+            mobile=user.mobile,
+        )
+    )
 
 
 @app.post("/api/images/upload")
@@ -202,6 +251,126 @@ def admin_adjust_credits(req: CreditAdjustRequest, db: Session = Depends(get_db)
     db.add(tx)
     db.commit()
     return ok(None)
+
+
+@app.post("/api/mobile/send-code")
+def send_mobile_code(
+    req: SmsSendRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> ApiResponse[None]:
+    _ensure_sms_configured()
+    mobile = _normalize_mobile(req.mobile)
+    client_ip = request.client.host if request.client else "unknown"
+    ensure_sms_rate_limit(mobile, client_ip)
+
+    try:
+        result = sms_client.send_sms_code(
+            phone_number=mobile,
+            scene=req.scene or "login",
+            sign_name=settings.ALIYUN_SMS_SIGN_NAME,
+            template_code=settings.ALIYUN_SMS_TEMPLATE_CODE,
+            template_param={"code": "##code##", "min": "5"},
+            expire_seconds=settings.SMS_CODE_EXPIRE_SECONDS,
+        )
+    except AliyunSmsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"短信发送失败：{exc.message or exc.code}",
+        ) from exc
+
+    record = SmsVerifySession(
+        mobile=mobile,
+        scene=req.scene or "login",
+        sms_session_id=result.sms_session_id,
+        code_hash=_hash_sms_code(mobile, result.sms_session_id, result.sms_code),
+        created_at=datetime.utcnow(),
+        expires_at=datetime.utcnow() + timedelta(seconds=settings.SMS_CODE_EXPIRE_SECONDS),
+    )
+    db.add(record)
+    db.commit()
+    return ok(None)
+
+
+@app.post("/api/mobile/verify")
+def verify_mobile_code(
+    req: SmsVerifyRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> ApiResponse[dict]:
+    _ensure_sms_configured()
+    mobile = _normalize_mobile(req.mobile)
+    now = datetime.utcnow()
+
+    record = (
+        db.query(SmsVerifySession)
+        .filter(
+            SmsVerifySession.mobile == mobile,
+            SmsVerifySession.scene == (req.scene or "login"),
+            SmsVerifySession.expires_at >= now,
+        )
+        .order_by(SmsVerifySession.created_at.desc())
+        .first()
+    )
+    if record is None:
+        return fail("请先获取验证码")
+    if record.verified_at:
+        return fail("验证码已使用，请重新获取")
+
+    code_hash = _hash_sms_code(mobile, record.sms_session_id, req.code)
+    if code_hash != record.code_hash:
+        record.attempts += 1
+        db.add(record)
+        db.commit()
+        return fail("验证码错误")
+
+    try:
+        sms_client.check_sms_code(mobile, req.code, record.scene)
+    except AliyunSmsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"验证码核验失败：{exc.message or exc.code}",
+        ) from exc
+
+    record.verified_at = now
+    db.add(record)
+    db.commit()
+
+    user = db.query(User).filter(User.mobile == mobile).first()
+    if user is None:
+        username = mobile
+        if db.query(User).filter(User.username == username).first():
+            username = f"user_{mobile}"
+        user = User(
+            username=username,
+            mobile=mobile,
+            password_hash=hash_password(secrets.token_urlsafe(12)),
+            is_admin=False,
+            enabled=True,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        if not user.enabled:
+            return fail("账号已禁用，请联系管理员")
+        if user.mobile != mobile:
+            user.mobile = mobile
+            db.add(user)
+            db.commit()
+
+    session = create_session(db, user)
+    set_session_cookie(response, session.id)
+    credits = _get_user_credits(db, user.id)
+    return ok(
+        MeResponse(
+            user_id=user.id,
+            username=user.username,
+            is_admin=user.is_admin,
+            credits=credits,
+            mobile=user.mobile,
+        ).dict()
+    )
 
 
 @app.post("/api/batches")

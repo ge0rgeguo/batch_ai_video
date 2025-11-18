@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -25,5 +26,7 @@ class QueryResult:
     video_url: Optional[str] = None
     error: Optional[str] = None
     progress: Optional[str] = None
+    remote_started_at: Optional[datetime] = None
+    remote_finished_at: Optional[datetime] = None
 
 

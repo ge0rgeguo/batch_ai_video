@@ -2,11 +2,28 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 import json
+from datetime import datetime
 
 import requests
 
 from ..settings import settings
 from .types import CreateResult, QueryResult, RemoteTaskStatus
+def _parse_timestamp(raw: Optional[object]) -> Optional[datetime]:
+    if raw in (None, "", 0):
+        return None
+    try:
+        val = float(raw)
+    except (TypeError, ValueError):
+        return None
+    if val <= 0:
+        return None
+    # 如果是毫秒级时间戳
+    if val > 1e12:
+        val /= 1000.0
+    try:
+        return datetime.utcfromtimestamp(val)
+    except (ValueError, OSError, OverflowError):
+        return None
 
 
 def _mask_token(token: str) -> str:
@@ -174,11 +191,22 @@ def query_task(*, api_key: str, task_id: str) -> QueryResult:
             except (ValueError, TypeError):
                 pass
 
+    # 远端时间戳（秒）
+    start_time = data.get("start_time")
+    finish_time = data.get("finish_time")
+    submit_time = data.get("submit_time")
+    if "data" in data and isinstance(data.get("data"), dict):
+        start_time = start_time or data["data"].get("start_time") or data["data"].get("created_at")
+        finish_time = finish_time or data["data"].get("finish_time") or data["data"].get("completed_at")
+        submit_time = submit_time or data["data"].get("submit_time")
+
     return QueryResult(
         status=RemoteTaskStatus(status),
         video_url=video_url,
         error=data.get("error") or data.get("message") or data.get("fail_reason"),
         progress=progress,
+        remote_started_at=_parse_timestamp(start_time or submit_time),
+        remote_finished_at=_parse_timestamp(finish_time),
     )
 
 

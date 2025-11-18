@@ -34,6 +34,7 @@ class MeResponse(BaseModel):
     username: str
     is_admin: bool
     credits: int = 0
+    mobile: Optional[str] = None
 
 
 class BatchCreateRequest(BaseModel):
@@ -69,6 +70,8 @@ class TaskRead(BaseModel):
     result_path: Optional[str] = None
     error_summary: Optional[str] = None
     progress: Optional[str] = None
+    remote_started_at: Optional[datetime] = None
+    remote_finished_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
@@ -89,6 +92,17 @@ class BatchRead(BaseModel):
     queued: int
     created_at: datetime
     updated_at: datetime
+
+
+class SmsSendRequest(BaseModel):
+    mobile: str
+    scene: Optional[str] = Field(default="login", max_length=32)
+
+
+class SmsVerifyRequest(BaseModel):
+    mobile: str
+    code: str = Field(min_length=4, max_length=10)
+    scene: Optional[str] = Field(default="login", max_length=32)
 
 
 def ok(data: Any) -> ApiResponse[Any]:

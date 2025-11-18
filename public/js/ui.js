@@ -216,8 +216,10 @@ export function renderTaskDetail(batchId, tasks) {
       statusDisplay = `${statusMeta.label} (${task.progress})`;
     }
     
-    // 计算任务用时
-    const taskDuration = formatDuration(task.created_at, task.updated_at, task.status);
+    // 计算任务用时（优先使用云雾返回的开始/结束时间）
+    const durationStart = task.remote_started_at || task.created_at;
+    const durationEnd = task.remote_finished_at || task.updated_at;
+    const taskDuration = formatDuration(durationStart, durationEnd, task.status);
 
     row.innerHTML = `
       <td style="text-align:center;">${index + 1}</td>

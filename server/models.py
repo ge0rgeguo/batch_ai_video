@@ -41,6 +41,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(64), unique=True, nullable=False, index=True)
+    mobile = Column(String(20), unique=True, nullable=True, index=True)
     password_hash = Column(String(256), nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     enabled = Column(Boolean, default=True, nullable=False)
@@ -106,6 +107,20 @@ class Batch(Base):
     tasks = relationship("Task", back_populates="batch", cascade="all, delete-orphan")
 
 
+class SmsVerifySession(Base):
+    __tablename__ = "sms_verify_sessions"
+
+    id = Column(Integer, primary_key=True)
+    mobile = Column(String(20), nullable=False, index=True)
+    scene = Column(String(32), nullable=False, default="login")
+    sms_session_id = Column(String(128), nullable=False)
+    code_hash = Column(String(128), nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    verified_at = Column(DateTime, nullable=True)
+    attempts = Column(Integer, default=0, nullable=False)
+
+
 class Task(Base):
     __tablename__ = "tasks"
 
@@ -125,6 +140,8 @@ class Task(Base):
     progress = Column(String(16), nullable=True)  # 进度信息，如 "50%"
     retries = Column(Integer, default=0, nullable=False)
     rerun_of_task_id = Column(String(36), nullable=True, index=True)
+    remote_started_at = Column(DateTime, nullable=True)
+    remote_finished_at = Column(DateTime, nullable=True)
 
     result_path = Column(Text, nullable=True)
 

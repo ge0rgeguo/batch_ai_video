@@ -123,16 +123,28 @@ def call_yunwu_generate(
             last_status = q.status
             
             # 更新任务进度到数据库（如果提供了task_id）
-            if task_id and q.progress:
+            if task_id and (q.progress or q.remote_started_at or q.remote_finished_at):
                 try:
                     from ..models import Task
                     with SessionLocal() as db:
                         db_task = db.get(Task, task_id)
                         if db_task:
-                            db_task.progress = q.progress
-                            db.add(db_task)
-                            db.commit()
-                            print(f"[yunwu] updated task {task_id} progress to {q.progress}")
+                            changed = False
+                            if q.progress and db_task.progress != q.progress:
+                                db_task.progress = q.progress
+                                changed = True
+                                print(f"[yunwu] updated task {task_id} progress to {q.progress}")
+                            if q.remote_started_at and db_task.remote_started_at != q.remote_started_at:
+                                db_task.remote_started_at = q.remote_started_at
+                                changed = True
+                                print(f"[yunwu] updated task {task_id} remote_started_at={q.remote_started_at}")
+                            if q.remote_finished_at and db_task.remote_finished_at != q.remote_finished_at:
+                                db_task.remote_finished_at = q.remote_finished_at
+                                changed = True
+                                print(f"[yunwu] updated task {task_id} remote_finished_at={q.remote_finished_at}")
+                            if changed:
+                                db.add(db_task)
+                                db.commit()
                 except Exception as pe:
                     print(f"[yunwu] failed to update progress: {pe}")
             

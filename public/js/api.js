@@ -71,6 +71,14 @@ export function login(credentials) {
   return request('/api/login', { method: 'POST', body: credentials });
 }
 
+export function sendSmsCode(payload) {
+  return request('/api/mobile/send-code', { method: 'POST', body: payload });
+}
+
+export function verifySmsCode(payload) {
+  return request('/api/mobile/verify', { method: 'POST', body: payload });
+}
+
 export function logout() {
   return request('/api/logout', { method: 'POST', silent: true });
 }

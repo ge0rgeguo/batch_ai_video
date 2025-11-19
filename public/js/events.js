@@ -11,6 +11,33 @@ export function registerEventHandlers(handlers) {
     });
   }
 
+  const smsLoginForm = document.getElementById('sms-login-form');
+  if (smsLoginForm) {
+    smsLoginForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(smsLoginForm);
+      handlers.onSmsLogin?.({
+        mobile: formData.get('mobile')?.toString().trim() ?? '',
+        code: formData.get('code')?.toString().trim() ?? '',
+      });
+    });
+  }
+
+  const loginTabs = document.getElementById('login-tabs');
+  if (loginTabs) {
+    loginTabs.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-login-mode]');
+      if (!button) return;
+      const mode = button.dataset.loginMode;
+      handlers.onLoginModeChange?.(mode);
+    });
+  }
+
+  const smsSendBtn = document.getElementById('sms-send-btn');
+  if (smsSendBtn) {
+    smsSendBtn.addEventListener('click', () => handlers.onSmsSend?.());
+  }
+
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => handlers.onLogout?.());

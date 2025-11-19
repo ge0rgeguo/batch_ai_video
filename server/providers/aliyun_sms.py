@@ -4,11 +4,21 @@ import json
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from alibabacloud_dypnsapi20170525 import models as dypns_models
-from alibabacloud_dypnsapi20170525.client import Client as DypnsapiClient
-from alibabacloud_tea_openapi import models as open_api_models
-from alibabacloud_tea_util import models as tea_models
-from Tea.exceptions import TeaException
+try:
+    from alibabacloud_dypnsapi20170525 import models as dypns_models
+    from alibabacloud_dypnsapi20170525.client import Client as DypnsapiClient
+    from alibabacloud_tea_openapi import models as open_api_models
+    from alibabacloud_tea_util import models as tea_models
+    from Tea.exceptions import TeaException
+    HAS_ALIYUN_SDK = True
+except ImportError:
+    HAS_ALIYUN_SDK = False
+    # Dummy classes to prevent NameError
+    dypns_models = None
+    DypnsapiClient = None
+    open_api_models = None
+    tea_models = None
+    TeaException = Exception
 
 from ..settings import settings
 
@@ -36,6 +46,11 @@ class AliyunSmsClient:
     ) -> None:
         self._client: Optional[DypnsapiClient] = None
         self._init_error: Optional[AliyunSmsError] = None
+        
+        if not HAS_ALIYUN_SDK:
+            self._init_error = AliyunSmsError("MissingDependency", "未安装阿里云短信 SDK")
+            return
+
         if not access_key_id or not access_key_secret:
             self._init_error = AliyunSmsError("InvalidAccessKey", "未配置阿里云短信 AccessKey，请检查环境变量")
             return
@@ -124,6 +139,3 @@ client = AliyunSmsClient(
     endpoint=settings.ALIYUN_SMS_ENDPOINT,
     region_id=settings.ALIYUN_SMS_REGION_ID,
 )
-
-
-

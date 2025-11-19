@@ -1,5 +1,6 @@
 export const PAGE_SIZE = 10;
 export const AUTO_REFRESH_INTERVAL = 5000;
+export const SMS_RESEND_SECONDS = 60;
 
 export const MODEL_CONFIG = {
   'sora-2': {

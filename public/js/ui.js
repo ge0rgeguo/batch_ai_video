@@ -4,6 +4,7 @@ const tooltipEstimatedHeight = 200;
 
 const selectors = {
   loginContainer: () => document.getElementById('login-container'),
+  authContainer: () => document.getElementById('auth-container'),
   appContainer: () => document.getElementById('app-container'),
   userDisplay: () => document.getElementById('user-display'),
   userCredits: () => document.getElementById('user-credits'),
@@ -23,11 +24,13 @@ const selectors = {
 
 export function showLoginView() {
   selectors.loginContainer()?.classList.remove('hidden');
+  selectors.authContainer()?.classList.add('hidden');
   selectors.appContainer()?.classList.add('hidden');
 }
 
 export function showAppView() {
   selectors.loginContainer()?.classList.add('hidden');
+  selectors.authContainer()?.classList.add('hidden');
   selectors.appContainer()?.classList.remove('hidden');
 }
 
@@ -39,7 +42,7 @@ export function updateUserInfo(user) {
   }
   if (credits) {
     const creditValue = user?.credits ?? 0;
-    credits.textContent = `💎 余额：${creditValue}`;
+    credits.textContent = `💎 积分：${creditValue}`;
   }
 }
 

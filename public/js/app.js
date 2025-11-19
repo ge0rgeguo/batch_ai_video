@@ -1,4 +1,4 @@
-import { PAGE_SIZE } from './constants.js';
+import { PAGE_SIZE, SMS_RESEND_SECONDS } from './constants.js';
 import {
   state,
   setCurrentUser,
@@ -38,6 +38,8 @@ import {
 import {
   getCurrentUser,
   login,
+  sendSmsCode,
+  verifySmsCode,
   logout,
   fetchBatches,
   fetchBatchTasks,
@@ -51,11 +53,18 @@ import {
 } from './api.js';
 import { registerEventHandlers } from './events.js';
 
+let currentLoginMode = 'sms';
+let smsCountdownTimerId = null;
+let smsCountdownRemaining = 0;
+
 async function init() {
   initDurationOptions();
 
   registerEventHandlers({
     onLogin: handleLogin,
+    onLoginModeChange: handleLoginModeChange,
+    onSmsSend: handleSmsSend,
+    onSmsLogin: handleSmsLogin,
     onLogout: handleLogout,
     onGenerate: handleGenerate,
     onModelChange: (model) => updateDurationOptions(model),
@@ -67,6 +76,7 @@ async function init() {
     onPromptHover: updatePromptTooltip,
   });
 
+  handleLoginModeChange(currentLoginMode);
   await bootstrapCurrentUser();
 }
 
@@ -102,11 +112,104 @@ async function handleLogin({ username, password }) {
   await enterApp(user);
 }
 
+function handleLoginModeChange(mode) {
+  if (mode !== 'password' && mode !== 'sms') {
+    return;
+  }
+  currentLoginMode = mode;
+  const passwordForm = document.getElementById('login-form');
+  const smsForm = document.getElementById('sms-login-form');
+  passwordForm?.classList.toggle('hidden', mode !== 'password');
+  smsForm?.classList.toggle('hidden', mode !== 'sms');
+  const tabs = document.querySelectorAll('#login-tabs button[data-login-mode]');
+  tabs.forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.loginMode === mode);
+  });
+  setLoginError('');
+  setSmsLoginError('');
+  if (mode === 'password') {
+    resetSmsLoginUI();
+  }
+}
+
+async function handleSmsSend() {
+  const mobileInput = document.getElementById('sms-mobile');
+  if (!mobileInput) return;
+  const mobile = mobileInput.value.trim();
+  if (!mobile) {
+    setSmsLoginError('请输入手机号');
+    mobileInput.focus();
+    return;
+  }
+
+  setSmsLoginError('');
+  setSmsSendingState(true, '发送中...');
+  try {
+    const response = await sendSmsCode({ mobile, scene: 'login' });
+    if (!response.ok) {
+      clearSmsCountdown();
+      setSmsSendingState(false);
+      return;
+    }
+    showToast('验证码已发送，请注意查收', 'success');
+    startSmsCountdown();
+  } catch (error) {
+    clearSmsCountdown();
+    setSmsSendingState(false);
+    setSmsLoginError('验证码发送失败，请稍后重试');
+  }
+}
+
+async function handleSmsLogin({ mobile, code }) {
+  const mobileInput = document.getElementById('sms-mobile');
+  const codeInput = document.getElementById('sms-code');
+  const submitBtn = document.getElementById('sms-login-submit');
+
+  const mobileValue = (mobile || mobileInput?.value || '').trim();
+  const codeValue = (code || codeInput?.value || '').trim();
+
+  if (!mobileValue) {
+    setSmsLoginError('请输入手机号');
+    mobileInput?.focus();
+    return;
+  }
+  if (!codeValue) {
+    setSmsLoginError('请输入短信验证码');
+    codeInput?.focus();
+    return;
+  }
+
+  setSmsLoginError('');
+  const originalText = submitBtn?.textContent;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = '验证中...';
+  }
+
+  try {
+    const response = await verifySmsCode({ mobile: mobileValue, code: codeValue, scene: 'login' });
+    if (!response.ok) {
+      setSmsLoginError(response?.error?.message || '验证码验证失败');
+      return;
+    }
+    clearSmsCountdown();
+    resetSmsLoginUI();
+    showToast('登录成功', 'success');
+    await enterApp(response.data);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText ?? '登录 / 注册';
+    }
+  }
+}
+
 async function enterApp(user) {
   setCurrentUser(user);
   updateUserInfo(user);
   setCurrentPage(1);
   showAppView();
+  resetSmsLoginUI();
   await loadBatches();
   restartAutoRefresh(() => loadBatches({ silent: true }));
 }
@@ -125,6 +228,7 @@ async function handleLogout() {
     clearPreviewObjectUrl();
     setLoginError('');
     showLoginView();
+    handleLoginModeChange('sms');
   }
 }
 
@@ -394,6 +498,82 @@ function handlePagination(direction) {
 
 function setLoginError(message) {
   const errorEl = document.getElementById('login-error');
+  if (!errorEl) return;
+  if (message) {
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  } else {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+}
+
+function setSmsSendingState(disabled, text) {
+  const btn = document.getElementById('sms-send-btn');
+  if (!btn) return;
+  btn.disabled = disabled;
+  if (text !== undefined) {
+    btn.textContent = text;
+  } else if (!disabled && smsCountdownRemaining <= 0) {
+    btn.textContent = '获取验证码';
+  }
+}
+
+function startSmsCountdown() {
+  clearSmsCountdown();
+  smsCountdownRemaining = SMS_RESEND_SECONDS;
+  updateSmsCountdown();
+  smsCountdownTimerId = window.setInterval(() => {
+    smsCountdownRemaining -= 1;
+    if (smsCountdownRemaining <= 0) {
+      clearSmsCountdown();
+    } else {
+      updateSmsCountdown();
+    }
+  }, 1000);
+}
+
+function updateSmsCountdown() {
+  const countdownEl = document.getElementById('sms-countdown');
+  const btn = document.getElementById('sms-send-btn');
+  if (!countdownEl || !btn) return;
+  if (smsCountdownRemaining > 0) {
+    countdownEl.textContent = `验证码已发送，${smsCountdownRemaining}s 后可重新获取`;
+    countdownEl.classList.remove('hidden');
+    btn.disabled = true;
+    btn.textContent = `${smsCountdownRemaining}s`;
+  } else {
+    countdownEl.textContent = '';
+    countdownEl.classList.add('hidden');
+    btn.disabled = false;
+    btn.textContent = '获取验证码';
+  }
+}
+
+function clearSmsCountdown() {
+  if (smsCountdownTimerId) {
+    clearInterval(smsCountdownTimerId);
+    smsCountdownTimerId = null;
+  }
+  smsCountdownRemaining = 0;
+  updateSmsCountdown();
+}
+
+function resetSmsLoginUI() {
+  clearSmsCountdown();
+  const mobileInput = document.getElementById('sms-mobile');
+  const codeInput = document.getElementById('sms-code');
+  if (mobileInput) {
+    mobileInput.value = '';
+  }
+  if (codeInput) {
+    codeInput.value = '';
+  }
+  setSmsLoginError('');
+}
+
+function setSmsLoginError(message) {
+  const errorEl = document.getElementById('sms-login-error');
   if (!errorEl) return;
   if (message) {
     errorEl.textContent = message;

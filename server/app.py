@@ -82,12 +82,11 @@ def _generate_sms_code() -> str:
     return f"{secrets.randbelow(10**6):06d}"
 
 
-def _ensure_sms_configured() -> None:
+def _ensure_sms_configured() -> bool:
     if not settings.ALIYUN_SMS_ACCESS_KEY_ID or not settings.ALIYUN_SMS_ACCESS_KEY_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="短信服务未配置，请联系管理员",
-        )
+        print("⚠️  短信服务未配置，使用本地模拟模式（验证码将打印在控制台）")
+        return False
+    return True
 
 
 def _ensure_dirs() -> None:
@@ -259,25 +258,40 @@ def send_mobile_code(
     request: Request,
     db: Session = Depends(get_db),
 ) -> ApiResponse[None]:
-    _ensure_sms_configured()
+    is_real_sms = _ensure_sms_configured()
     mobile = _normalize_mobile(req.mobile)
     client_ip = request.client.host if request.client else "unknown"
     ensure_sms_rate_limit(mobile, client_ip)
 
-    try:
-        result = sms_client.send_sms_code(
-            phone_number=mobile,
-            scene=req.scene or "login",
-            sign_name=settings.ALIYUN_SMS_SIGN_NAME,
-            template_code=settings.ALIYUN_SMS_TEMPLATE_CODE,
-            template_param={"code": "##code##", "min": "5"},
-            expire_seconds=settings.SMS_CODE_EXPIRE_SECONDS,
-        )
-    except AliyunSmsError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"短信发送失败：{exc.message or exc.code}",
-        ) from exc
+    if is_real_sms:
+        try:
+            result = sms_client.send_sms_code(
+                phone_number=mobile,
+                scene=req.scene or "login",
+                sign_name=settings.ALIYUN_SMS_SIGN_NAME,
+                template_code=settings.ALIYUN_SMS_TEMPLATE_CODE,
+                template_param={"code": "##code##", "min": "5"},
+                expire_seconds=settings.SMS_CODE_EXPIRE_SECONDS,
+            )
+        except AliyunSmsError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"短信发送失败：{exc.message or exc.code}",
+            ) from exc
+    else:
+        # Mock SMS sending
+        code = "123456"  # Fixed code for local testing
+        print(f"\n{'='*40}")
+        print(f"📱 [MOCK SMS] Mobile: {mobile}")
+        print(f"🔑 [MOCK SMS] Code:   {code}")
+        print(f"{'='*40}\n")
+        
+        class MockResult:
+            def __init__(self, code):
+                self.sms_session_id = f"mock_{uuid.uuid4().hex}"
+                self.sms_code = code
+        
+        result = MockResult(code)
 
     record = SmsVerifySession(
         mobile=mobile,
@@ -298,7 +312,7 @@ def verify_mobile_code(
     response: Response,
     db: Session = Depends(get_db),
 ) -> ApiResponse[dict]:
-    _ensure_sms_configured()
+    is_real_sms = _ensure_sms_configured()
     mobile = _normalize_mobile(req.mobile)
     now = datetime.utcnow()
 
@@ -324,13 +338,16 @@ def verify_mobile_code(
         db.commit()
         return fail("验证码错误")
 
-    try:
-        sms_client.check_sms_code(mobile, req.code, record.scene)
-    except AliyunSmsError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"验证码核验失败：{exc.message or exc.code}",
-        ) from exc
+    if is_real_sms:
+        try:
+            sms_client.check_sms_code(mobile, req.code, record.scene)
+        except AliyunSmsError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"验证码核验失败：{exc.message or exc.code}",
+            ) from exc
+    else:
+        print(f"[verify] Mock verification passed for {mobile}")
 
     record.verified_at = now
     db.add(record)
@@ -351,6 +368,10 @@ def verify_mobile_code(
         db.add(user)
         db.commit()
         db.refresh(user)
+        
+        # 新用户赠送 100 积分
+        db.add(CreditTransaction(user_id=user.id, delta=100, reason="new_user_gift"))
+        db.commit()
     else:
         if not user.enabled:
             return fail("账号已禁用，请联系管理员")

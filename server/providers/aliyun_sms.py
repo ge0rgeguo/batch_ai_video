@@ -118,7 +118,7 @@ class AliyunSmsClient:
             raise self._init_error or AliyunSmsError("InvalidAccessKey", "未配置阿里云短信 AccessKey")
         request = dypns_models.CheckSmsVerifyCodeRequest(
             phone_number=phone_number,
-            sms_code=sms_code,
+            verify_code=sms_code,
             scheme_name=scheme_name,
         )
         runtime = tea_models.RuntimeOptions()

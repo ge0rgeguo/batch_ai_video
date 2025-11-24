@@ -127,3 +127,5 @@ export function retryFailedTasks(batchId) {
 export function pullUserProfile() {
   return request('/api/me');
 }
+
+export { request as apiRequest };

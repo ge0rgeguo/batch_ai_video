@@ -1,322 +1,389 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI视频批量生成</title>
-    <link rel="stylesheet" href="/css/app.css?v=20251113-1" />
+  <link rel="stylesheet" href="/css/app.css?v=20251113-1" />
 </head>
+
 <body>
-<div id="toast-container"></div>
+  <div id="toast-container"></div>
 
-<div id="login-container" class="login-container">
-  <header class="landing-header">
-    <nav class="nav-container">
-      <div class="brand">
-        <div class="brand-badge">Z</div>
-        做视频 · AI 视频内容生产平台
-      </div>
-      <div class="nav-cta">
-        <div class="contact-wrapper" id="contactTrigger">
-          <button class="btn btn-secondary" type="button">联系客服</button>
-          <div class="contact-popover" role="dialog" aria-hidden="true">
-            <img src="/img/contact-qr.png" alt="联系客服二维码" />
-            <span>微信扫码联系：齐奥至</span>
-          </div>
+  <div id="login-container" class="login-container">
+    <header class="landing-header">
+      <nav class="nav-container">
+        <div class="brand">
+          <div class="brand-badge">Z</div>
+          做视频 · AI 视频内容生产平台
         </div>
-        <button class="btn btn-secondary" type="button" id="nav-login-btn">登录</button>
-        <button class="btn btn-primary" type="button" id="nav-register-btn">注册</button>
-      </div>
-    </nav>
-  </header>
-
-  <main class="landing-main">
-    <section class="hero">
-      <div class="hero-badge">
-        <span class="badge-icon">🎁</span>
-        <span class="badge-text">新用户限时福利：注册即送 100 积分</span>
-      </div>
-      <h1>批量制作，高质量，无水印 AI 视频</h1>
-      <p class="hero-subtitle">一键生成电商营销视频，支持 Sora 2 & Pro 模型</p>
-      <div class="hero-actions">
-        <button class="btn btn-primary btn-xl" type="button" id="hero-register-btn">免费开始制作</button>
-        <p class="hero-note">无需绑卡 · 注册即用</p>
-      </div>
-    </section>
-
-    <section class="models-section">
-      <div class="models-grid">
-        <article class="model-card">
-          <div class="model-label">Sora2</div>
-          <div class="model-meta">
-            <span class="meta-chip">720p 输出</span>
-            <span class="meta-chip">10s / 15s</span>
-            <span class="meta-chip">批量 50 条</span>
-          </div>
-          <ul class="model-params">
-            <li>方向：横向 16:9、纵向 9:16</li>
-            <li>尺寸：720p</li>
-            <li>时长：10秒 / 15秒</li>
-            <li>积分：10分 / 15分</li>
-            <li>批量：同时支持10个任务，单个任务支持50条</li>
-          </ul>
-          <p class="model-note">适合日常批量生成、快速复刻商品短视频。</p>
-        </article>
-        <article class="model-card">
-          <div class="model-label">Sora2 Pro</div>
-          <div class="model-meta">
-            <span class="meta-chip">1080p 输出</span>
-            <span class="meta-chip">最长 25s</span>
-            <span class="meta-chip">批量 50 条</span>
-          </div>
-          <ul class="model-params">
-            <li>方向：横向 16:9、纵向 9:16</li>
-            <li>尺寸：1080p</li>
-            <li>时长：10秒 / 15秒 / 25秒</li>
-            <li>积分：50分 / 75分 / 100分</li>
-            <li>批量：同时支持10个任务，单个任务支持50条</li>
-          </ul>
-          <p class="model-note">适合高质量投放素材、重点活动主视频等场景。</p>
-        </article>
-      </div>
-    </section>
-  </main>
-</div>
-
-<div id="auth-container" class="auth-container hidden">
-  <div class="auth-header">
-    <button type="button" class="btn btn-link back-home-btn" id="back-home-btn">← 返回首页</button>
-  </div>
-  <div class="auth-content">
-    <div class="auth-columns">
-      <div class="login-pane" id="auth-login">
-        <h2 class="auth-card-title">登录到 AI 视频生成平台</h2>
-        <div class="login-card" id="login-card">
-          <div class="login-tabs" id="login-tabs">
-            <button type="button" class="active" data-login-mode="sms">手机号快捷登录</button>
-            <button type="button" data-login-mode="password">账号密码登录</button>
-          </div>
-
-          <form id="sms-login-form" class="login-form" autocomplete="off" novalidate>
-            <div class="form-group">
-              <label for="sms-mobile">手机号</label>
-              <input type="tel" id="sms-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13" />
+        <div class="nav-cta">
+          <div class="contact-wrapper" id="contactTrigger">
+            <button class="btn btn-secondary" type="button">联系客服</button>
+            <div class="contact-popover" role="dialog" aria-hidden="true">
+              <img src="/img/contact-qr.png" alt="联系客服二维码" />
+              <span>微信扫码联系：齐奥至</span>
             </div>
-            <div class="form-group">
-              <label for="sms-code">验证码</label>
-              <div class="sms-inline">
-                <input type="text" id="sms-code" name="code" placeholder="请输入短信验证码" maxlength="6" />
-                <button type="button" class="btn btn-secondary" id="sms-send-btn">获取验证码</button>
+          </div>
+          <button class="btn btn-secondary" type="button" id="nav-login-btn">登录</button>
+          <button class="btn btn-primary" type="button" id="nav-register-btn">注册</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="landing-main">
+      <section class="hero">
+        <div class="hero-badge">
+          <span class="badge-icon">🎁</span>
+          <span class="badge-text">新用户限时福利：注册即送 100 积分</span>
+        </div>
+        <h1>批量制作，高质量，无水印 AI 视频</h1>
+        <p class="hero-subtitle">一键生成电商营销视频，支持 Sora 2 & Pro 模型</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-xl" type="button" id="hero-register-btn">免费开始制作</button>
+          <p class="hero-note">无需绑卡 · 注册即用</p>
+        </div>
+      </section>
+
+      <section class="models-section">
+        <div class="models-grid">
+          <article class="model-card">
+            <div class="model-label">Sora2</div>
+            <div class="model-meta">
+              <span class="meta-chip">720p 输出</span>
+              <span class="meta-chip">10s / 15s</span>
+              <span class="meta-chip">批量 50 条</span>
+            </div>
+            <ul class="model-params">
+              <li>方向：横向 16:9、纵向 9:16</li>
+              <li>尺寸：720p</li>
+              <li>时长：10秒 / 15秒</li>
+              <li>积分：10分 / 15分</li>
+              <li>批量：同时支持10个任务，单个任务支持50条</li>
+            </ul>
+            <p class="model-note">适合日常批量生成、快速复刻商品短视频。</p>
+          </article>
+          <article class="model-card">
+            <div class="model-label">Sora2 Pro</div>
+            <div class="model-meta">
+              <span class="meta-chip">1080p 输出</span>
+              <span class="meta-chip">最长 25s</span>
+              <span class="meta-chip">批量 50 条</span>
+            </div>
+            <ul class="model-params">
+              <li>方向：横向 16:9、纵向 9:16</li>
+              <li>尺寸：1080p</li>
+              <li>时长：10秒 / 15秒 / 25秒</li>
+              <li>积分：50分 / 75分 / 100分</li>
+              <li>批量：同时支持10个任务，单个任务支持50条</li>
+            </ul>
+            <p class="model-note">适合高质量投放素材、重点活动主视频等场景。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="auth-container" class="auth-container hidden">
+    <div class="auth-header">
+      <button type="button" class="btn btn-link back-home-btn" id="back-home-btn">← 返回首页</button>
+    </div>
+    <div class="auth-content">
+      <div class="auth-columns">
+        <div class="login-pane" id="auth-login">
+          <h2 class="auth-card-title">登录到 AI 视频生成平台</h2>
+          <div class="login-card" id="login-card">
+            <div class="login-tabs" id="login-tabs">
+              <button type="button" class="active" data-login-mode="sms">手机号快捷登录</button>
+              <button type="button" data-login-mode="password">账号密码登录</button>
+            </div>
+
+            <form id="sms-login-form" class="login-form" autocomplete="off" novalidate>
+              <div class="form-group">
+                <label for="sms-mobile">手机号</label>
+                <input type="tel" id="sms-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13" />
               </div>
-              <div class="sms-countdown hidden" id="sms-countdown"></div>
-            </div>
-            <button type="submit" class="btn btn-primary" id="sms-login-submit">登录 / 注册</button>
-            <div class="error-msg" id="sms-login-error"></div>
-          </form>
+              <div class="form-group">
+                <label for="sms-code">验证码</label>
+                <div class="sms-inline">
+                  <input type="text" id="sms-code" name="code" placeholder="请输入短信验证码" maxlength="6" />
+                  <button type="button" class="btn btn-secondary" id="sms-send-btn">获取验证码</button>
+                </div>
+                <div class="sms-countdown hidden" id="sms-countdown"></div>
+              </div>
+              <button type="submit" class="btn btn-primary" id="sms-login-submit">登录 / 注册</button>
+              <div class="error-msg" id="sms-login-error"></div>
+            </form>
 
-          <form id="login-form" class="login-form hidden" autocomplete="off" novalidate>
-            <div class="form-group">
-              <label for="login-username">用户名</label>
-              <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username" />
-            </div>
-            <div class="form-group">
-              <label for="login-password">密码</label>
-              <input type="password" id="login-password" name="password" placeholder="请输入密码" autocomplete="current-password" />
-            </div>
-            <button type="submit" class="btn btn-primary" id="login-submit">登录</button>
-            <div class="error-msg" id="login-error"></div>
-          </form>
+            <form id="login-form" class="login-form hidden" autocomplete="off" novalidate>
+              <div class="form-group">
+                <label for="login-username">用户名</label>
+                <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username" />
+              </div>
+              <div class="form-group">
+                <label for="login-password">密码</label>
+                <input type="password" id="login-password" name="password" placeholder="请输入密码"
+                  autocomplete="current-password" />
+              </div>
+              <button type="submit" class="btn btn-primary" id="login-submit">登录</button>
+              <div class="error-msg" id="login-error"></div>
+            </form>
+          </div>
         </div>
-      </div>
 
-      <div class="register-card" id="auth-register">
-        <h2 class="auth-card-title">快速注册账号</h2>
-        <form id="register-form" autocomplete="off" novalidate>
-          <div class="form-group">
-            <label for="register-mobile">手机号</label>
-            <input
-              type="tel"
-              id="register-mobile"
-              name="mobile"
-              placeholder="请输入 11 位手机号"
-              maxlength="13"
-            />
-          </div>
-          <div class="form-group">
-            <label for="register-code">验证码</label>
-            <div class="sms-inline">
-              <input
-                type="text"
-                id="register-code"
-                name="code"
-                placeholder="请输入短信验证码"
-                maxlength="6"
-              />
-              <button type="button" class="btn btn-secondary" id="register-send-btn">
-                获取验证码
-              </button>
+        <div class="register-card" id="auth-register">
+          <h2 class="auth-card-title">快速注册账号</h2>
+          <form id="register-form" autocomplete="off" novalidate>
+            <div class="form-group">
+              <label for="register-mobile">手机号</label>
+              <input type="tel" id="register-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13" />
             </div>
-            <div class="sms-countdown hidden" id="register-countdown"></div>
-          </div>
+            <div class="form-group">
+              <label for="register-code">验证码</label>
+              <div class="sms-inline">
+                <input type="text" id="register-code" name="code" placeholder="请输入短信验证码" maxlength="6" />
+                <button type="button" class="btn btn-secondary" id="register-send-btn">
+                  获取验证码
+                </button>
+              </div>
+              <div class="sms-countdown hidden" id="register-countdown"></div>
+            </div>
             <button type="submit" class="btn btn-primary" id="register-submit">完成注册</button>
-        </form>
-        <div style="text-align:center; margin-top:16px;">
-          已有账号？<a href="#auth-login" class="btn-link" style="margin-top:0;" id="go-to-login-link">直接登录</a>
+          </form>
+          <div style="text-align:center; margin-top:16px;">
+            已有账号？<a href="#auth-login" class="btn-link" style="margin-top:0;" id="go-to-login-link">直接登录</a>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div id="app-container" class="container hidden">
-  <header>
-    <h1>🎬 AI视频批量生成</h1>
-    <div class="user-info">
-      <span id="user-display"></span>
-        <span id="user-credits" class="text-muted"></span>
+  <div id="app-container" class="container hidden">
+    <header>
+      <div class="header-left">
+        <h1 style="cursor:pointer" id="nav-home-btn">🎬 AI视频批量生成</h1>
+      </div>
+      <div class="user-info">
+        <span id="user-display"></span>
+        <span id="user-credits" class="text-muted clickable" title="点击充值" style="cursor:pointer"></span>
         <button type="button" class="btn btn-secondary" id="logout-btn">退出登录</button>
-    </div>
-  </header>
+      </div>
+    </header>
 
-    <div class="card">
-      <div class="three-col-layout">
-        <div class="col-image">
-          <h3 class="section-title">图片</h3>
-          <input type="file" id="image-file" class="image-input" accept="image/png, image/jpeg" />
-          <div id="image-filename" class="image-filename hidden"></div>
-          <img id="thumb" class="hidden" alt="上传预览" />
-          <button type="button" class="btn btn-secondary remove-btn hidden" id="remove-img">删除图片</button>
-    </div>
+    <!-- 创作视图 -->
+    <div id="view-create" class="view-section">
+      <div class="card">
+        <div class="three-col-layout">
+          <div class="col-image">
+            <h3 class="section-title">图片</h3>
+            <input type="file" id="image-file" class="image-input" accept="image/png, image/jpeg" />
+            <div id="image-filename" class="image-filename hidden"></div>
+            <img id="thumb" class="hidden" alt="上传预览" />
+            <button type="button" class="btn btn-secondary remove-btn hidden" id="remove-img">删除图片</button>
+          </div>
 
-        <div class="col-prompt">
-          <h3 class="section-title">提示词 Prompt</h3>
-          <textarea id="prompt" class="prompt-textarea" placeholder="请输入视频生成提示词（必填，≤10000字符）"></textarea>
-    </div>
+          <div class="col-prompt">
+            <h3 class="section-title">提示词 Prompt</h3>
+            <textarea id="prompt" class="prompt-textarea" placeholder="请输入视频生成提示词（必填，≤10000字符）"></textarea>
+          </div>
 
-        <div class="col-params">
-          <h3 class="section-title">模型参数</h3>
-          <div class="param-group">
-            <label for="model">模型</label>
-            <select id="model">
-              <option value="sora-2">Sora 2</option>
-              <option value="sora-2-pro">Sora 2 Pro</option>
-            </select>
+          <div class="col-params">
+            <h3 class="section-title">模型参数</h3>
+            <div class="param-group">
+              <label for="model">模型</label>
+              <select id="model">
+                <option value="sora-2">Sora 2</option>
+                <option value="sora-2-pro">Sora 2 Pro</option>
+              </select>
+            </div>
+            <div class="param-group">
+              <label for="orientation">方向</label>
+              <select id="orientation">
+                <option value="landscape">横向</option>
+                <option value="portrait">纵向</option>
+              </select>
+            </div>
+            <div class="param-group">
+              <label for="size">尺寸</label>
+              <select id="size">
+                <option value="small">720p</option>
+                <option value="large">1080p</option>
+              </select>
+            </div>
+            <div class="param-group">
+              <label for="duration">时长</label>
+              <select id="duration"></select>
+            </div>
+            <div class="param-group">
+              <label for="num-videos">视频数量</label>
+              <input type="number" id="num-videos" value="1" min="1" max="50" />
+            </div>
           </div>
-          <div class="param-group">
-            <label for="orientation">方向</label>
-            <select id="orientation">
-              <option value="landscape">横向</option>
-              <option value="portrait">纵向</option>
-            </select>
-          </div>
-          <div class="param-group">
-            <label for="size">尺寸</label>
-            <select id="size">
-              <option value="small">720p</option>
-              <option value="large">1080p</option>
-            </select>
-          </div>
-          <div class="param-group">
-            <label for="duration">时长</label>
-          <select id="duration"></select>
-          </div>
-          <div class="param-group">
-            <label for="num-videos">视频数量</label>
-          <input type="number" id="num-videos" value="1" min="1" max="50" />
-          </div>
+        </div>
+
+        <div class="generate-btn-container">
+          <button type="button" class="generate-btn" id="generate-btn">🎬 生成视频</button>
         </div>
       </div>
 
-      <div class="generate-btn-container">
-        <button type="button" class="generate-btn" id="generate-btn">🎬 生成视频</button>
+      <div class="card">
+        <h3>任务管理 <span class="text-muted subtitle">(点击行查看详情)</span></h3>
+        <table id="batch-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">序号</th>
+              <th style="width:160px;">创建时间</th>
+              <th style="width:100px;">完成用时</th>
+              <th style="width:300px;">提示词</th>
+              <th style="width:80px;">图片</th>
+              <th style="width:160px;">状态</th>
+              <th style="width:240px;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="batch-tbody"></tbody>
+        </table>
+
+        <div class="pagination">
+          <button type="button" class="btn btn-secondary" id="prev-page">上一页</button>
+          <div id="page-info" class="text-muted">第 1 / 1 页</div>
+          <button type="button" class="btn btn-secondary" id="next-page">下一页</button>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <h3>任务管理 <span class="text-muted subtitle">(点击行查看详情)</span></h3>
-      <table id="batch-table">
-        <thead>
-          <tr>
-            <th style="width:50px;">序号</th>
-            <th style="width:160px;">创建时间</th>
-            <th style="width:100px;">完成用时</th>
-            <th style="width:300px;">提示词</th>
-            <th style="width:80px;">图片</th>
-            <th style="width:160px;">状态</th>
-            <th style="width:240px;">操作</th>
-          </tr>
-        </thead>
-        <tbody id="batch-tbody"></tbody>
-      </table>
+    <!-- 积分视图 (Overlay) -->
+    <div id="view-credits" class="view-section credits-overlay hidden">
+      <div class="credits-modal">
+        <button type="button" class="close-credits-btn" id="close-credits-btn">×</button>
+        <div class="card" style="margin-bottom:0; box-shadow:none;">
+          <h2 class="section-title">积分充值</h2>
+          <div class="recharge-panel">
+            <div class="recharge-options">
+              <div class="recharge-option selected" data-amount="9.9" data-credits="100">
+                <div class="credits">100 积分</div>
+                <div class="price">¥ 9.9</div>
+              </div>
+              <div class="recharge-option" data-amount="44.9" data-credits="500">
+                <div class="credits">500 积分</div>
+                <div class="price">¥ 44.9</div>
+                <div class="badge">热销</div>
+              </div>
+              <div class="recharge-option" data-amount="89.9" data-credits="1000">
+                <div class="credits">1000 积分</div>
+                <div class="price">¥ 89.9</div>
+              </div>
+              <div class="recharge-option custom" id="custom-recharge-option">
+                <div class="credits">自定义金额</div>
+                <input type="number" id="custom-amount" placeholder="输入金额" min="1" step="1">
+              </div>
+            </div>
 
-      <div class="pagination">
-        <button type="button" class="btn btn-secondary" id="prev-page">上一页</button>
-        <div id="page-info" class="text-muted">第 1 / 1 页</div>
-        <button type="button" class="btn btn-secondary" id="next-page">下一页</button>
+            <div class="payment-section">
+              <h3 class="label">支付方式</h3>
+              <div class="payment-methods">
+                <label class="payment-method selected">
+                  <input type="radio" name="payment" value="alipay" checked>
+                  <span class="icon alipay">支</span> 支付宝
+                </label>
+                <label class="payment-method">
+                  <input type="radio" name="payment" value="wechat">
+                  <span class="icon wechat">微</span> 微信支付
+                </label>
+              </div>
+              <div style="text-align:center;">
+                <button class="btn btn-primary btn-large" id="btn-pay">立即充值 ¥ <span
+                    id="pay-amount-display">9.9</span></button>
+                <div class="tip text-muted">充值比例：1元 ≈ 10积分（套餐更优惠）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">积分变动历史</h3>
+          <table id="credits-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>变动原因</th>
+                <th>积分变动</th>
+                <th>关联ID</th>
+              </tr>
+            </thead>
+            <tbody id="credits-tbody"></tbody>
+          </table>
+          <div class="pagination">
+            <button type="button" class="btn btn-secondary" id="credits-prev-page">上一页</button>
+            <div id="credits-page-info" class="text-muted">第 1 / 1 页</div>
+            <button type="button" class="btn btn-secondary" id="credits-next-page">下一页</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-    <script type="module" src="/js/app.js?v=20251113-1"></script>
-    <script type="module" src="/js/register.js?v=20251113-1"></script>
-    <script>
-      (function () {
-        const wrapper = document.getElementById('contactTrigger');
-        if (!wrapper) return;
-        const popover = wrapper.querySelector('.contact-popover');
-        const toggle = (show) => {
-          wrapper.classList.toggle('show', show);
-          popover?.setAttribute('aria-hidden', show ? 'false' : 'true');
-        };
-        wrapper.addEventListener('mouseenter', () => toggle(true));
-        wrapper.addEventListener('mouseleave', () => toggle(false));
-        wrapper.addEventListener('click', (e) => {
-          e.stopPropagation();
-          toggle(!wrapper.classList.contains('show'));
-        });
-        document.addEventListener('click', () => toggle(false));
+  <script type="module" src="/js/app.js?v=20251113-1"></script>
+  <script type="module" src="/js/register.js?v=20251113-1"></script>
+  <script>
+    (function () {
+      const wrapper = document.getElementById('contactTrigger');
+      if (!wrapper) return;
+      const popover = wrapper.querySelector('.contact-popover');
+      const toggle = (show) => {
+        wrapper.classList.toggle('show', show);
+        popover?.setAttribute('aria-hidden', show ? 'false' : 'true');
+      };
+      wrapper.addEventListener('mouseenter', () => toggle(true));
+      wrapper.addEventListener('mouseleave', () => toggle(false));
+      wrapper.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggle(!wrapper.classList.contains('show'));
+      });
+      document.addEventListener('click', () => toggle(false));
 
-        // 视图切换逻辑
-        const landingContainer = document.getElementById('login-container');
-        const authContainer = document.getElementById('auth-container');
-        const loginBtn = document.getElementById('nav-login-btn');
-        const registerBtn = document.getElementById('nav-register-btn');
-        const heroRegisterBtn = document.getElementById('hero-register-btn');
-        const backHomeBtn = document.getElementById('back-home-btn');
-        const goToLoginLink = document.getElementById('go-to-login-link');
-        
-        const authLoginPane = document.getElementById('auth-login');
-        const authRegisterPane = document.getElementById('auth-register');
+      // 视图切换逻辑
+      const landingContainer = document.getElementById('login-container');
+      const authContainer = document.getElementById('auth-container');
+      const loginBtn = document.getElementById('nav-login-btn');
+      const registerBtn = document.getElementById('nav-register-btn');
+      const heroRegisterBtn = document.getElementById('hero-register-btn');
+      const backHomeBtn = document.getElementById('back-home-btn');
+      const goToLoginLink = document.getElementById('go-to-login-link');
 
-        const showAuthView = (mode) => {
-          landingContainer.classList.add('hidden');
-          authContainer.classList.remove('hidden');
-          
-          // 简单的显示/隐藏逻辑，实际项目中可能需要更复杂的 Tab 切换
-          if (mode === 'register') {
-            authLoginPane.style.display = 'none';
-            authRegisterPane.style.display = 'block';
-          } else {
-            authLoginPane.style.display = 'block';
-            authRegisterPane.style.display = 'none';
-          }
-        };
+      const authLoginPane = document.getElementById('auth-login');
+      const authRegisterPane = document.getElementById('auth-register');
 
-        const showLandingView = () => {
-          authContainer.classList.add('hidden');
-          landingContainer.classList.remove('hidden');
-        };
+      const showAuthView = (mode) => {
+        landingContainer.classList.add('hidden');
+        authContainer.classList.remove('hidden');
 
-        loginBtn?.addEventListener('click', () => showAuthView('login'));
-        registerBtn?.addEventListener('click', () => showAuthView('register'));
-        heroRegisterBtn?.addEventListener('click', () => showAuthView('register'));
-        backHomeBtn?.addEventListener('click', showLandingView);
-        
-        goToLoginLink?.addEventListener('click', (e) => {
-          e.preventDefault();
-          showAuthView('login');
-        });
-      })();
-    </script>
+        // 简单的显示/隐藏逻辑，实际项目中可能需要更复杂的 Tab 切换
+        if (mode === 'register') {
+          authLoginPane.style.display = 'none';
+          authRegisterPane.style.display = 'block';
+        } else {
+          authLoginPane.style.display = 'block';
+          authRegisterPane.style.display = 'none';
+        }
+      };
+
+      const showLandingView = () => {
+        authContainer.classList.add('hidden');
+        landingContainer.classList.remove('hidden');
+      };
+
+      loginBtn?.addEventListener('click', () => showAuthView('login'));
+      registerBtn?.addEventListener('click', () => showAuthView('register'));
+      heroRegisterBtn?.addEventListener('click', () => showAuthView('register'));
+      backHomeBtn?.addEventListener('click', showLandingView);
+
+      goToLoginLink?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showAuthView('login');
+      });
+    })();
+  </script>
 </body>
+
 </html>

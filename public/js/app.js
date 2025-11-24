@@ -34,7 +34,9 @@ import {
   fillBatchForm,
   tryUpdateBatchTable,
   updatePromptTooltip,
+  switchAppView,
 } from './ui.js';
+import { initCreditsView, onShowCreditsView } from './credits.js';
 import {
   getCurrentUser,
   login,
@@ -58,6 +60,7 @@ let smsCountdownTimerId = null;
 let smsCountdownRemaining = 0;
 
 async function init() {
+  initCreditsView();
   initDurationOptions();
 
   registerEventHandlers({
@@ -75,6 +78,21 @@ async function init() {
     onPagination: handlePagination,
     onPromptHover: updatePromptTooltip,
   });
+
+  // Bind Nav Events
+  document.getElementById('nav-create-btn')?.addEventListener('click', () => switchAppView('create'));
+  document.getElementById('nav-home-btn')?.addEventListener('click', () => switchAppView('create'));
+
+  const goCredits = () => {
+    switchAppView('credits');
+    onShowCreditsView();
+  };
+  // document.getElementById('nav-credits-btn')?.addEventListener('click', goCredits); // Removed nav button
+  // document.getElementById('user-credits')?.addEventListener('click', goCredits); // Temporarily hidden
+  // document.getElementById('nav-credits-link')?.addEventListener('click', goCredits);
+
+  // Close Credits Button
+  document.getElementById('close-credits-btn')?.addEventListener('click', () => switchAppView('create'));
 
   handleLoginModeChange(currentLoginMode);
   await bootstrapCurrentUser();

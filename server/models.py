@@ -50,6 +50,7 @@ class User(Base):
 
     api_keys = relationship("UserApiKey", back_populates="user", cascade="all, delete-orphan")
     sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
+    orders = relationship("RechargeOrder", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserSession(Base):
@@ -177,3 +178,19 @@ class CreditTransaction(Base):
     ref_batch_id = Column(String(36), nullable=True, index=True)
     ref_task_id = Column(String(36), nullable=True, index=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class RechargeOrder(Base):
+    __tablename__ = "recharge_orders"
+
+    id = Column(String(32), primary_key=True)  # 订单号
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    amount = Column(Integer, nullable=False)  # 单位：分
+    credits = Column(Integer, nullable=False)
+    payment_method = Column(String(16), nullable=False)  # 'alipay', 'wechat'
+    status = Column(String(16), default="pending", nullable=False, index=True) # pending, paid, failed, cancelled
+    external_order_id = Column(String(64), nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    paid_at = Column(DateTime, nullable=True)
+
+    user = relationship("User", back_populates="orders")

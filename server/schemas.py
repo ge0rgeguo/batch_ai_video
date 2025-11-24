@@ -105,6 +105,33 @@ class SmsVerifyRequest(BaseModel):
     scene: Optional[str] = Field(default="login", max_length=32)
 
 
+class RechargeCreateRequest(BaseModel):
+    amount: float  # 元
+    payment_method: Literal["alipay", "wechat"]
+    credits: Optional[int] = None # 如果是自定义金额，可能会自动计算，或者由前端传
+
+
+class RechargeResponse(BaseModel):
+    order_id: str
+    payment_url: Optional[str] = None
+    qr_code: Optional[str] = None
+    method: str
+
+
+class PaymentStatusResponse(BaseModel):
+    order_id: str
+    status: str  # pending, paid, failed, cancelled
+    credits_added: Optional[int] = None
+
+
+class CreditTransactionRead(BaseModel):
+    id: int
+    delta: int
+    reason: str
+    created_at: datetime
+    ref_batch_id: Optional[str] = None
+
+
 def ok(data: Any) -> ApiResponse[Any]:
     return ApiResponse(ok=True, data=data)
 

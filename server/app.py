@@ -36,6 +36,10 @@ from .schemas import (
     TaskRead,
     SmsSendRequest,
     SmsVerifyRequest,
+    RechargeCreateRequest,
+    RechargeResponse,
+    PaymentStatusResponse,
+    CreditTransactionRead,
     fail,
     ok,
 )
@@ -49,9 +53,11 @@ from .security import (
 )
 from .settings import settings
 from .crypto import encrypt_text
-from .models import UserApiKey
+from .models import UserApiKey, RechargeOrder
 from .providers.aliyun_sms import client as sms_client, AliyunSmsError
 from .sms_rate_limit import ensure_sms_rate_limit
+from .providers.payment import payment_service
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Video Generation Batch API", docs_url=None, redoc_url=None)
 
@@ -688,6 +694,161 @@ def download_zip(batch_id: str, db: Session = Depends(get_db), user: User = Depe
         media_type="application/zip",
         filename=f"batch_{batch_id}.zip",
     )
+
+
+# -------------------------------------------------------------------------
+# 支付与积分相关接口
+# -------------------------------------------------------------------------
+
+@app.post("/api/recharge/orders")
+def create_recharge_order(
+    req: RechargeCreateRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> ApiResponse[RechargeResponse]:
+    try:
+        order, pay_info = payment_service.create_order(
+            user_id=user.id,
+            amount_cny=req.amount,
+            payment_method=req.payment_method,
+            db_session=db
+        )
+        return ok(RechargeResponse(
+            order_id=order.id,
+            payment_url=pay_info.get("payment_url"),
+            qr_code=pay_info.get("qr_code"),
+            method=pay_info.get("method", "unknown")
+        ))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return fail(f"创建订单失败: {str(e)}")
+
+@app.get("/api/recharge/orders/{order_id}/status")
+def get_order_status(
+    order_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> ApiResponse[PaymentStatusResponse]:
+    order = db.query(RechargeOrder).filter(RechargeOrder.id == order_id).first()
+    if not order or order.user_id != user.id:
+        return fail("订单不存在")
+    
+    # 主动查询状态（如果是 pending）
+    if order.status == "pending":
+        status_str = payment_service.check_order_status(order, db)
+    else:
+        status_str = order.status
+        
+    return ok(PaymentStatusResponse(
+        order_id=order.id,
+        status=status_str,
+        credits_added=order.credits if status_str == "paid" else 0
+    ))
+
+@app.get("/api/credits/history")
+def get_credit_history(
+    page: int = 1, 
+    page_size: int = 20, 
+    db: Session = Depends(get_db), 
+    user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
+    q = db.query(CreditTransaction).filter(CreditTransaction.user_id == user.id).order_by(CreditTransaction.created_at.desc())
+    total = q.count()
+    items = q.offset((page - 1) * page_size).limit(page_size).all()
+    
+    return ok({
+        "items": [CreditTransactionRead(**t.__dict__) for t in items],
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    })
+
+# Mock 支付页面
+@app.get("/mock-pay.html", response_class=HTMLResponse)
+def mock_pay_page(order_id: str, amount: float, credits: int):
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>模拟支付收银台</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }}
+            .card {{ background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; max-width: 400px; width: 90%; }}
+            h1 {{ color: #1f1f1f; font-size: 20px; margin-bottom: 1.5rem; font-weight: 600; }}
+            .amount {{ font-size: 36px; color: #1677ff; font-weight: bold; margin: 0.5rem 0; display: flex; align-items: baseline; justify-content: center; }}
+            .amount small {{ font-size: 18px; margin-right: 4px; font-weight: normal; }}
+            .info {{ color: #666; font-size: 14px; margin-bottom: 0.5rem; }}
+            .qr-container {{ margin: 1.5rem 0; background: #f8f9fa; padding: 1rem; border-radius: 8px; display: inline-block; }}
+            .qr-code {{ width: 180px; height: 180px; background-color: #fff; padding: 10px; border-radius: 4px; }}
+            .btn-group {{ display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }}
+            button {{ background: #1677ff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; transition: all 0.2s; font-weight: 500; }}
+            button:hover {{ background: #4096ff; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(22,119,255,0.2); }}
+            button:active {{ transform: translateY(0); }}
+            .cancel {{ background: #f5f5f5; color: #666; }}
+            .cancel:hover {{ background: #e0e0e0; color: #333; box-shadow: none; }}
+            .divider {{ height: 1px; background: #eee; margin: 1.5rem 0; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>模拟支付收银台</h1>
+            <div class="info">订单号: {order_id}</div>
+            <div class="amount"><small>¥</small>{amount}</div>
+            <div class="info">支付后将获得 <span style="color: #1677ff; font-weight: bold;">{credits}</span> 积分</div>
+            
+            <div class="qr-container">
+                <!-- 使用 API 生成简单的二维码，或者使用静态占位图 -->
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=MOCK_PAYMENT_{order_id}" class="qr-code" alt="Mock QR Code" />
+                <div style="font-size: 12px; color: #999; margin-top: 8px;">请使用手机扫码支付 (模拟)</div>
+            </div>
+
+            <div class="btn-group">
+                <button onclick="confirmPay()">确认支付 (模拟成功)</button>
+                <button class="cancel" onclick="window.close()">取消支付</button>
+            </div>
+        </div>
+        <script>
+            async function confirmPay() {{
+                const btn = document.querySelector('button');
+                btn.disabled = true;
+                btn.textContent = '处理中...';
+                try {{
+                    const res = await fetch('/api/mock/pay/{order_id}', {{ method: 'POST' }});
+                    const data = await res.json();
+                    if (data.ok) {{
+                        // 支付成功后，尝试通知父窗口刷新（如果是弹窗）
+                        try {{
+                            if (window.opener && !window.opener.closed) {{
+                                window.opener.postMessage({{ type: 'PAYMENT_SUCCESS', orderId: '{order_id}' }}, '*');
+                            }}
+                        }} catch (e) {{ console.error(e); }}
+                        
+                        alert('支付成功！请返回原窗口查看。');
+                        window.close();
+                    }} else {{
+                        alert('支付失败: ' + (data.error?.message || '未知错误'));
+                    }}
+                }} catch (e) {{
+                    alert('网络错误');
+                }} finally {{
+                    btn.disabled = false;
+                    btn.textContent = '确认支付 (模拟成功)';
+                }}
+            }}
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.post("/api/mock/pay/{order_id}")
+def mock_pay_confirm(order_id: str, db: Session = Depends(get_db)):
+    if payment_service.mock_pay_success(order_id, db):
+        return ok({"status": "paid"})
+    return fail("订单不存在或已支付")
 
 
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")

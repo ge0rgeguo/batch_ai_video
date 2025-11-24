@@ -71,6 +71,21 @@ class Settings:
     SMS_CODE_MAX_PER_MOBILE_PER_DAY: int = int(os.environ.get("SMS_CODE_MAX_PER_MOBILE_PER_DAY", "15"))
     SMS_CODE_HASH_SALT: str = os.environ.get("SMS_CODE_HASH_SALT", "aliyun-sms-salt")
 
+    # Payment
+    ALIPAY_APP_ID: Optional[str] = os.environ.get("ALIPAY_APP_ID")
+    ALIPAY_PRIVATE_KEY: Optional[str] = os.environ.get("ALIPAY_PRIVATE_KEY")
+    ALIPAY_PUBLIC_KEY: Optional[str] = os.environ.get("ALIPAY_PUBLIC_KEY")
+
+    WECHAT_PAY_APP_ID: Optional[str] = os.environ.get("WECHAT_PAY_APP_ID")
+    WECHAT_PAY_MCH_ID: Optional[str] = os.environ.get("WECHAT_PAY_MCH_ID")
+    WECHAT_PAY_APIV3_KEY: Optional[str] = os.environ.get("WECHAT_PAY_APIV3_KEY")
+    WECHAT_PAY_CERT_SERIAL_NO: Optional[str] = os.environ.get("WECHAT_PAY_CERT_SERIAL_NO")
+    WECHAT_PAY_PRIVATE_KEY: Optional[str] = os.environ.get("WECHAT_PAY_PRIVATE_KEY")
+
+    @property
+    def BASE_URL(self) -> str:
+        return self.PUBLIC_BASE_URL or f"http://{self.HOST}:{self.PORT}"
+
 
 settings = Settings()
 

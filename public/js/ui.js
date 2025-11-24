@@ -46,6 +46,23 @@ export function updateUserInfo(user) {
   }
 }
 
+export function switchAppView(viewName) {
+  const createView = document.getElementById('view-create');
+  const creditsView = document.getElementById('view-credits');
+
+  if (!createView || !creditsView) return;
+
+  if (viewName === 'create') {
+    // 如果是 create 模式，确保主视图显示，并隐藏积分弹窗
+    createView.classList.remove('hidden');
+    creditsView.classList.add('hidden');
+  } else if (viewName === 'credits') {
+    // 如果是 credits 模式，作为 overlay 显示，不隐藏主视图
+    createView.classList.remove('hidden');
+    creditsView.classList.remove('hidden');
+  }
+}
+
 export function updatePagination(page, totalPages) {
   const pageInfo = selectors.pageInfo();
   if (pageInfo) {

@@ -108,7 +108,7 @@ export function setImagePreview(src, filename = null) {
   const removeBtn = selectors.removeImageBtn();
   const filenameDiv = selectors.imageFilename();
   const fileInput = selectors.imageInput();
-  
+
   if (thumb) {
     thumb.src = src;
     thumb.classList.remove('hidden');
@@ -116,7 +116,7 @@ export function setImagePreview(src, filename = null) {
   if (removeBtn) {
     removeBtn.classList.remove('hidden');
   }
-  
+
   // 显示文件名
   if (filenameDiv) {
     if (filename) {
@@ -126,7 +126,7 @@ export function setImagePreview(src, filename = null) {
       filenameDiv.classList.add('hidden');
     }
   }
-  
+
   // 隐藏文件输入框（当显示已上传的图片时）
   if (fileInput && filename) {
     fileInput.classList.add('hidden');
@@ -138,7 +138,7 @@ export function clearImagePreview() {
   const removeBtn = selectors.removeImageBtn();
   const imageInput = selectors.imageInput();
   const filenameDiv = selectors.imageFilename();
-  
+
   if (thumb) {
     thumb.src = '';
     thumb.classList.add('hidden');
@@ -229,13 +229,13 @@ export function renderTaskDetail(batchId, tasks) {
 
     const resultUrl = resolveResultUrl(task.result_path);
     const resultHtml = buildResultCell(task, resultUrl);
-    
+
     // 构建状态显示，如果是 in_progress 且有 progress 字段，显示进度
     let statusDisplay = statusMeta.label;
     if (task.status === 'in_progress' && task.progress) {
       statusDisplay = `${statusMeta.label} (${task.progress})`;
     }
-    
+
     // 计算任务用时（优先使用云雾返回的开始/结束时间）
     const durationStart = task.remote_started_at || task.created_at;
     const durationEnd = task.remote_finished_at || task.updated_at;
@@ -494,24 +494,24 @@ function formatDuration(createdAt, updatedAt, status) {
   if (status !== 'completed') {
     return '-';
   }
-  
+
   const created = new Date(createdAt);
   const updated = new Date(updatedAt);
-  
+
   if (Number.isNaN(created.getTime()) || Number.isNaN(updated.getTime())) {
     return '-';
   }
-  
+
   const diffMs = updated.getTime() - created.getTime();
   if (diffMs < 0) {
     return '-';
   }
-  
+
   const totalSeconds = Math.floor(diffMs / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  
+
   const parts = [];
   if (hours > 0) {
     parts.push(`${hours}时`);
@@ -520,7 +520,7 @@ function formatDuration(createdAt, updatedAt, status) {
     parts.push(`${minutes}分`);
   }
   parts.push(`${seconds}秒`);
-  
+
   return parts.join('');
 }
 
@@ -529,7 +529,7 @@ function resolveResultUrl(path) {
   if (/^https?:\/\//i.test(path)) {
     return path;
   }
-  return `/public/temp-results/${path}`;
+  return `/temp-results/${path}`;
 }
 
 function buildResultCell(task, resultUrl) {

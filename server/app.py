@@ -673,9 +673,14 @@ def download_zip(batch_id: str, db: Session = Depends(get_db), user: User = Depe
                         continue
                 else:
                     # 本地路径：直接添加
-                    if os.path.exists(task.result_path):
-                        fname = f"{i:03d}_{Path(task.result_path).name}"
-                        zf.write(task.result_path, arcname=fname)
+                    # 兼容绝对路径（旧数据）和相对文件名（新数据）
+                    p = Path(task.result_path)
+                    if not p.is_absolute():
+                        p = Path(settings.RESULTS_BASE_DIR) / p
+                    
+                    if p.exists():
+                        fname = f"{i:03d}_{p.name}"
+                        zf.write(p, arcname=fname)
                         manifest_lines.append(f"{fname}: {task.prompt[:100]}")
                         print(f"[download_zip] ✅ 已添加本地文件到 ZIP: {fname}")
             

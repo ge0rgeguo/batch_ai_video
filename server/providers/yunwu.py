@@ -148,9 +148,9 @@ def call_yunwu_generate(
                 except Exception as pe:
                     print(f"[yunwu] failed to update progress: {pe}")
             
-            if q.status == RemoteTaskStatus.completed and q.video_url:
-                # 按需返回远端可访问URL（由前端直接打开），避免本地下载再提供链接
-                return q.video_url
+                # 下载到本地并返回文件名（相对路径）
+                full_path = _download_to_results(q.video_url)
+                return Path(full_path).name
             if q.status in {RemoteTaskStatus.failed, RemoteTaskStatus.cancelled}:
                 raise RuntimeError(q.error or f"远端任务{q.status.value}")
         except Exception as e:

@@ -39,7 +39,7 @@ class MeResponse(BaseModel):
 
 class BatchCreateRequest(BaseModel):
     prompt: str
-    model: Literal["sora-2", "sora-2-pro"]
+    model: Literal["sora-2-all", "sora-2-pro-all"]
     orientation: Literal["portrait", "landscape"]
     size: Literal["small", "medium", "large"]
     duration: Literal[5, 10, 15, 25]

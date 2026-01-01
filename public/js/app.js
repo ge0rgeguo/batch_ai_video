@@ -54,12 +54,14 @@ import {
   pullUserProfile,
 } from './api.js';
 import { registerEventHandlers } from './events.js';
+import { initLanguage, toggleLanguage, t } from './i18n.js';
 
 let currentLoginMode = 'sms';
 let smsCountdownTimerId = null;
 let smsCountdownRemaining = 0;
 
 async function init() {
+  initLanguage();
   initCreditsView();
   initDurationOptions();
 
@@ -88,14 +90,27 @@ async function init() {
     onShowCreditsView();
   };
   // document.getElementById('nav-credits-btn')?.addEventListener('click', goCredits); // Removed nav button
-  // document.getElementById('user-credits')?.addEventListener('click', goCredits); // Temporarily hidden
+  document.getElementById('user-credits')?.addEventListener('click', goCredits);
   // document.getElementById('nav-credits-link')?.addEventListener('click', goCredits);
 
   // Close Credits Button
   document.getElementById('close-credits-btn')?.addEventListener('click', () => switchAppView('create'));
 
+  // Language Toggle
+  document.getElementById('lang-toggle-btn')?.addEventListener('click', handleLanguageToggle);
+
   handleLoginModeChange(currentLoginMode);
   await bootstrapCurrentUser();
+}
+
+function handleLanguageToggle() {
+  toggleLanguage();
+  // Refresh dynamic content that might depend on language
+  if (state.currentUser) {
+    updateUserInfo(state.currentUser);
+    loadBatches();
+  }
+  updateDurationOptions(document.getElementById('model')?.value);
 }
 
 async function bootstrapCurrentUser() {
@@ -114,14 +129,14 @@ async function bootstrapCurrentUser() {
 async function handleLogin({ username, password }) {
   const errorEl = document.getElementById('login-error');
   if (!username || !password) {
-    setLoginError('请输入用户名和密码');
+    setLoginError('请输入用户名和密码'); // Leaving as is for now, or could localize
     return;
   }
   setLoginError('');
 
   const response = await login({ username, password });
   if (!response.ok) {
-    setLoginError(response?.error?.message || '登录失败');
+    setLoginError(response?.error?.message || t('toast.login_failed') || '登录失败');
     return;
   }
 
@@ -155,7 +170,7 @@ async function handleSmsSend() {
   if (!mobileInput) return;
   const mobile = mobileInput.value.trim();
   if (!mobile) {
-    setSmsLoginError('请输入手机号');
+    setSmsLoginError(t('auth.placeholder.mobile'));
     mobileInput.focus();
     return;
   }
@@ -169,7 +184,7 @@ async function handleSmsSend() {
       setSmsSendingState(false);
       return;
     }
-    showToast('验证码已发送，请注意查收', 'success');
+    showToast(t('toast.verify_code_sent'), 'success');
     startSmsCountdown();
   } catch (error) {
     clearSmsCountdown();
@@ -187,12 +202,12 @@ async function handleSmsLogin({ mobile, code }) {
   const codeValue = (code || codeInput?.value || '').trim();
 
   if (!mobileValue) {
-    setSmsLoginError('请输入手机号');
+    setSmsLoginError(t('auth.placeholder.mobile'));
     mobileInput?.focus();
     return;
   }
   if (!codeValue) {
-    setSmsLoginError('请输入短信验证码');
+    setSmsLoginError(t('auth.placeholder.code'));
     codeInput?.focus();
     return;
   }
@@ -212,12 +227,12 @@ async function handleSmsLogin({ mobile, code }) {
     }
     clearSmsCountdown();
     resetSmsLoginUI();
-    showToast('登录成功', 'success');
+    showToast(t('toast.login_success'), 'success');
     await enterApp(response.data);
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = originalText ?? '登录 / 注册';
+      submitBtn.textContent = originalText ?? t('auth.btn.login_register');
     }
   }
 }
@@ -260,7 +275,7 @@ async function handleGenerate() {
 
   const prompt = promptInput?.value.trim();
   if (!prompt) {
-    showToast('请输入提示词', 'error');
+    showToast(t('toast.enter_prompt'), 'error');
     return;
   }
 
@@ -280,7 +295,7 @@ async function handleGenerate() {
     return;
   }
 
-  showToast('批次创建成功', 'success');
+  showToast(t('toast.batch_created'), 'success');
   await loadBatches();
   const profile = await pullUserProfile();
   if (profile.ok) {
@@ -394,7 +409,7 @@ async function handleRefillBatch(batchId) {
     }
   }
   if (!batch) {
-    showToast('未找到对应批次', 'error');
+    showToast(t('toast.no_batch_found'), 'error');
     return;
   }
 
@@ -411,12 +426,12 @@ async function handleRefillBatch(batchId) {
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast('参数已回填，可修改后重新生成', 'info');
+  showToast(t('toast.params_refilled'), 'info');
 }
 
 async function handleDeleteBatch(batchId) {
   if (!batchId) return;
-  if (!window.confirm('确认删除整个批次？')) {
+  if (!window.confirm(t('confirm.delete_batch'))) {
     return;
   }
   const response = await deleteBatch(batchId);
@@ -425,7 +440,7 @@ async function handleDeleteBatch(batchId) {
   }
   removeExpandedBatch(batchId);
   removeTaskDetail(batchId);
-  showToast('批次已删除', 'success');
+  showToast(t('toast.batch_deleted'), 'success');
   await loadBatches();
 }
 
@@ -437,11 +452,11 @@ async function handleRetryFailed(batchId) {
   }
   const failedTasks = response.data.filter((task) => task.status === 'failed');
   if (!failedTasks.length) {
-    showToast('没有失败的任务', 'info');
+    showToast(t('toast.no_failed_tasks'), 'info');
     return;
   }
   await Promise.all(failedTasks.map((task) => retryTask(task.id)));
-  showToast(`已重试 ${failedTasks.length} 个失败任务`, 'success');
+  showToast(t('toast.retried_tasks', { n: failedTasks.length }), 'success');
   await refreshBatchTasks(batchId);
   await loadBatches({ silent: true });
 }
@@ -452,7 +467,7 @@ async function handleRetryTask(taskId, batchId) {
   if (!response.ok) {
     return;
   }
-  showToast('任务已重新提交', 'success');
+  showToast(t('toast.task_resubmitted'), 'success');
   if (batchId) {
     await refreshBatchTasks(batchId);
     await loadBatches({ silent: true });
@@ -461,14 +476,14 @@ async function handleRetryTask(taskId, batchId) {
 
 async function handleDeleteTask(taskId, batchId) {
   if (!taskId) return;
-  if (!window.confirm('确认删除此任务？')) {
+  if (!window.confirm(t('confirm.delete_task'))) {
     return;
   }
   const response = await deleteTask(taskId);
   if (!response.ok) {
     return;
   }
-  showToast('任务已删除', 'success');
+  showToast(t('toast.task_deleted'), 'success');
   if (batchId) {
     await refreshBatchTasks(batchId);
   }
@@ -484,7 +499,7 @@ async function handleImageSelected(file) {
   setPreviewObjectUrl(objectUrl);
   setUploadedImagePath(response.data.path);
   setImagePreview(objectUrl, file.name);
-  showToast('图片上传成功', 'success');
+  showToast(t('toast.image_uploaded'), 'success');
 }
 
 async function handleRemoveImage() {
@@ -500,7 +515,7 @@ async function handleRemoveImage() {
   clearUploadedImagePath();
   clearPreviewObjectUrl();
   clearImagePreview();
-  showToast('图片已删除', 'success');
+  showToast(t('toast.image_deleted'), 'success');
 }
 
 function handlePagination(direction) {
@@ -533,7 +548,7 @@ function setSmsSendingState(disabled, text) {
   if (text !== undefined) {
     btn.textContent = text;
   } else if (!disabled && smsCountdownRemaining <= 0) {
-    btn.textContent = '获取验证码';
+    btn.textContent = t('auth.btn.get_code');
   }
 }
 
@@ -556,7 +571,7 @@ function updateSmsCountdown() {
   const btn = document.getElementById('sms-send-btn');
   if (!countdownEl || !btn) return;
   if (smsCountdownRemaining > 0) {
-    countdownEl.textContent = `验证码已发送，${smsCountdownRemaining}s 后可重新获取`;
+    countdownEl.textContent = `验证码已发送，${smsCountdownRemaining}s 后可重新获取`; // Could be localized
     countdownEl.classList.remove('hidden');
     btn.disabled = true;
     btn.textContent = `${smsCountdownRemaining}s`;
@@ -564,7 +579,7 @@ function updateSmsCountdown() {
     countdownEl.textContent = '';
     countdownEl.classList.add('hidden');
     btn.disabled = false;
-    btn.textContent = '获取验证码';
+    btn.textContent = t('auth.btn.get_code');
   }
 }
 

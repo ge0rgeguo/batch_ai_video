@@ -130,10 +130,16 @@ def call_yunwu_generate(
                         db_task = db.get(Task, task_id)
                         if db_task:
                             changed = False
-                            if q.progress and db_task.progress != q.progress:
-                                db_task.progress = q.progress
+                            # Sync remote status to progress field for visibility
+                            status_text = q.status.value
+                            if q.progress:
+                                status_text = f"{status_text} ({q.progress})"
+                            
+                            if db_task.progress != status_text:
+                                db_task.progress = status_text
                                 changed = True
-                                print(f"[yunwu] updated task {task_id} progress to {q.progress}")
+                                print(f"[yunwu] updated task {task_id} progress to {status_text}")
+
                             if q.remote_started_at and db_task.remote_started_at != q.remote_started_at:
                                 db_task.remote_started_at = q.remote_started_at
                                 changed = True
@@ -148,9 +154,9 @@ def call_yunwu_generate(
                 except Exception as pe:
                     print(f"[yunwu] failed to update progress: {pe}")
             
-                # 下载到本地并返回文件名（相对路径）
-                full_path = _download_to_results(q.video_url)
-                return Path(full_path).name
+            if q.status == RemoteTaskStatus.completed and q.video_url:
+                # 按需返回远端可访问URL（由前端直接打开），避免本地下载再提供链接
+                return q.video_url
             if q.status in {RemoteTaskStatus.failed, RemoteTaskStatus.cancelled}:
                 raise RuntimeError(q.error or f"远端任务{q.status.value}")
         except Exception as e:

@@ -42,6 +42,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(64), unique=True, nullable=False, index=True)
     mobile = Column(String(20), unique=True, nullable=True, index=True)
+    email = Column(String(128), unique=True, nullable=True, index=True)  # Google OAuth email
+    google_id = Column(String(64), unique=True, nullable=True, index=True)  # Google OAuth sub
     password_hash = Column(String(256), nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     enabled = Column(Boolean, default=True, nullable=False)

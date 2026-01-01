@@ -3,23 +3,24 @@
   --bg-body: #050508;
   --bg-gradient-start: #0f172a;
   --bg-gradient-end: #1e1b4b;
-  
+
   /* 玻璃拟态背景 */
   --glass-bg: rgba(30, 41, 59, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
-  
+
   /* 主色调 */
   --primary: #6366f1;
   --primary-hover: #4f46e5;
   --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   --accent: #06b6d4;
-  
+
   /* 文本颜色 */
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --text-dark: #1e293b; /* 用于浅色背景上的文字 */
-  
+  --text-dark: #1e293b;
+  /* 用于浅色背景上的文字 */
+
   /* 功能色 */
   --success: #10b981;
   --warning: #f59e0b;
@@ -42,7 +43,7 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-body);
-  background-image: 
+  background-image:
     radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 25%),
     radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 25%);
   color: var(--text-main);
@@ -55,13 +56,16 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.02);
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -205,9 +209,17 @@ body {
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 /* Models Grid */
@@ -315,10 +327,11 @@ body {
   width: 100%;
   height: 100%;
   background: var(--bg-body);
-  background-image: 
+  background-image:
     radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 25%),
     radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 25%);
-  z-index: 9999; /* Increased z-index significantly */
+  z-index: 9999;
+  /* Increased z-index significantly */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -361,10 +374,12 @@ body {
 
 .auth-columns {
   width: 100%;
-  max-width: 380px; /* 单栏显示 */
+  max-width: 380px;
+  /* 单栏显示 */
 }
 
-.login-pane, .register-card {
+.login-pane,
+.register-card {
   background: #fff;
   border-radius: var(--radius-lg);
   padding: 32px;
@@ -731,10 +746,38 @@ td {
 }
 
 /* Status Badges */
-.status-pending, .status-queued { color: var(--warning); background: rgba(245, 158, 11, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; }
-.status-running { color: var(--info); background: rgba(59, 130, 246, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; }
-.status-completed { color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; }
-.status-failed { color: var(--danger); background: rgba(239, 68, 68, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; }
+.status-pending,
+.status-queued {
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.status-running {
+  color: var(--info);
+  background: rgba(59, 130, 246, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.status-completed {
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.status-failed {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
 
 /* Task Details */
 .tasks-detail-row td {
@@ -760,16 +803,19 @@ td {
   position: fixed;
   top: 24px;
   right: 24px;
-  z-index: 3000; /* Ensure toast is always on top */
+  z-index: 3000;
+  /* Ensure toast is always on top */
   display: flex;
   flex-direction: column;
   gap: 12px;
-  pointer-events: none; /* Allow clicks to pass through container */
+  pointer-events: none;
+  /* Allow clicks to pass through container */
 }
 
 .toast {
   background: white;
-  color: var(--text-dark); /* 修复白色背景下文字看不清的问题 */
+  color: var(--text-dark);
+  /* 修复白色背景下文字看不清的问题 */
   padding: 16px 24px;
   border-radius: var(--radius-md);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -779,20 +825,39 @@ td {
   min-width: 300px;
   border-left: 4px solid transparent;
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: auto; /* Restore clicks for toasts themselves */
+  pointer-events: auto;
+  /* Restore clicks for toasts themselves */
 }
 
-.toast.success { border-left-color: var(--success); }
-.toast.error { border-left-color: var(--danger); }
-.toast.info { border-left-color: var(--info); }
+.toast.success {
+  border-left-color: var(--success);
+}
+
+.toast.error {
+  border-left-color: var(--danger);
+}
+
+.toast.info {
+  border-left-color: var(--info);
+}
 
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* Contact Popover */
-.contact-wrapper { position: relative; }
+.contact-wrapper {
+  position: relative;
+}
+
 .contact-popover {
   position: absolute;
   top: calc(100% + 16px);
@@ -808,20 +873,52 @@ td {
   color: var(--text-dark);
   border: 1px solid #e2e8f0;
 }
-.contact-popover img { width: 100%; border-radius: var(--radius-sm); margin-bottom: 8px; }
-.contact-wrapper.show .contact-popover { display: block; animation: fadeIn 0.2s; }
+
+.contact-popover img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.contact-wrapper.show .contact-popover {
+  display: block;
+  animation: fadeIn 0.2s;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translate(-50%, 10px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .hero h1 { font-size: 2.5rem; }
-  .nav-container { flex-direction: column; gap: 16px; padding: 16px; border-radius: var(--radius-lg); }
-  .nav-cta { width: 100%; justify-content: center; flex-wrap: wrap; }
-  .three-col-layout { grid-template-columns: 1fr; }
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .nav-container {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+  }
+
+  .nav-cta {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .three-col-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ====================
@@ -1018,231 +1115,467 @@ td {
    Credits View (Additions)
    ==================== */
 .recharge-panel {
-    max-width: 800px;
-    margin: 0 auto;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .recharge-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .recharge-option {
-    border: 2px solid #e2e8f0;
-    border-radius: var(--radius-md);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.3s;
-    background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s;
+  background: #f8fafc;
 }
 
 .recharge-option:hover {
-    border-color: var(--primary);
-    background: white;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  border-color: var(--primary);
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
 .recharge-option.selected {
-    border-color: var(--primary);
-    background-color: rgba(99, 102, 241, 0.05);
+  border-color: var(--primary);
+  background-color: rgba(99, 102, 241, 0.05);
 }
 
 .recharge-option .credits {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text-dark);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-dark);
 }
 
 .recharge-option .price {
-    font-size: 1.5rem;
-    color: var(--primary);
-    font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--primary);
+  font-weight: 800;
 }
 
 .recharge-option .badge {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: var(--danger);
-    color: white;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 100px;
-    font-weight: 600;
-    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
 }
 
 .recharge-option.custom input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 8px;
-    border: 1px solid #cbd5e0;
-    border-radius: var(--radius-sm);
-    text-align: center;
-    font-weight: 600;
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-weight: 600;
 }
 
 .payment-section {
-    border-top: 1px solid #e2e8f0;
-    padding-top: 30px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 30px;
 }
 
 .payment-section .label {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--text-dark);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text-dark);
 }
 
 .payment-methods {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 24px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .payment-method {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    font-size: 1rem;
-    border: 2px solid #e2e8f0;
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-    transition: all 0.2s;
-    background: white;
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  background: white;
+  font-weight: 500;
 }
 
 .payment-method:hover {
-    border-color: #cbd5e0;
-    background: #f8fafc;
+  border-color: #cbd5e0;
+  background: #f8fafc;
 }
 
 .payment-method.selected {
-    border-color: var(--primary);
-    background-color: rgba(99, 102, 241, 0.05);
+  border-color: var(--primary);
+  background-color: rgba(99, 102, 241, 0.05);
 }
 
 .payment-method input {
-    display: none;
+  display: none;
 }
 
 .payment-method .icon {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    color: white;
-    font-size: 0.85rem;
-    font-weight: bold;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
 }
 
 .payment-method .icon.alipay {
-    background-color: #1677ff;
+  background-color: #1677ff;
 }
 
 .payment-method .icon.wechat {
-    background-color: #07c160;
+  background-color: #07c160;
 }
 
 .btn-large {
-    width: 100%;
-    max-width: 400px;
-    font-size: 1.2rem;
-    padding: 16px 32px;
-    border-radius: 100px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1.2rem;
+  padding: 16px 32px;
+  border-radius: 100px;
 }
 
 .tip {
-    margin-top: 16px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }
 
 /* Credits Table */
 #credits-table {
-    width: 100%;
+  width: 100%;
 }
+
 #credits-table th {
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 0.9rem;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.9rem;
 }
+
 #credits-table td {
-    color: #334155;
+  color: #334155;
 }
+
 .delta-plus {
-    color: var(--success);
-    font-weight: 600;
+  color: var(--success);
+  font-weight: 600;
 }
+
 .delta-minus {
-    color: var(--text-dark);
-    font-weight: 500;
+  color: var(--text-dark);
+  font-weight: 500;
 }
 
 /* Credits Overlay */
 .credits-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 5000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    overflow-y: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 5000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .credits-modal {
-    background: #fff;
-    border-radius: var(--radius-lg);
-    width: 100%;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: slideUp 0.3s ease-out;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease-out;
 }
 
 .close-credits-btn {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: #94a3b8;
-    cursor: pointer;
-    z-index: 10;
-    line-height: 1;
-    padding: 0;
-    transition: color 0.2s;
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #94a3b8;
+  cursor: pointer;
+  z-index: 10;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
 }
 
 .close-credits-btn:hover {
-    color: var(--text-dark);
+  color: var(--text-dark);
 }
 
 @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .credits-overlay.hidden {
-    display: none !important;
+  display: none !important;
+}
+
+/* ====================
+   Google OAuth Login
+   ==================== */
+.oauth-section {
+  margin-bottom: 16px;
+}
+
+.google-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 500;
+  color: #3c4043;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.google-login-btn:hover {
+  background: #f8fafc;
+  border-color: #c1c7ce;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+}
+
+.google-login-btn:active {
+  background: #f1f3f4;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* Login Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.login-divider span {
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+/* ====================
+   Payment Tabs
+   ==================== */
+.payment-tabs {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.payment-tab {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.payment-tab.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.payment-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.stripe-section,
+.cny-section,
+.alipay-section {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Unified QR Code Container (Alipay & WeChat) */
+.qr-container {
+  margin-top: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.qr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.close-qr-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.close-qr-btn:hover {
+  color: #64748b;
+}
+
+.qr-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.qr-image {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-md);
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.qr-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  color: #64748b;
+}
+
+.qr-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #1677ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.qr-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.qr-info strong {
+  color: var(--primary);
+}
+
+.qr-status {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.qr-status .status-waiting {
+  color: #f59e0b;
+}
+
+.qr-status .status-success {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.qr-status .status-failed {
+  color: #ef4444;
+}
+
+/* WeChat Section */
+.wechat-section {
+  animation: fadeIn 0.2s ease-out;
 }

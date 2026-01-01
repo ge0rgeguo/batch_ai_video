@@ -14,4 +14,8 @@ alibabacloud-dypnsapi20170525
 alibabacloud-credentials
 alibabacloud-tea-openapi
 alibabacloud-tea-util
+authlib
+httpx
+itsdangerous
+stripe
 

@@ -4,8 +4,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI视频批量生成</title>
-  <link rel="stylesheet" href="/css/app.css?v=20251113-1" />
+  <title data-i18n="app.title">AI视频批量生成</title>
+  <link rel="stylesheet" href="/css/app.css?v=20251231-1" />
+
+  <!-- Import Map for ES Module Versioning -->
+  <script type="importmap">
+  {
+    "imports": {
+      "/js/constants.js": "/js/constants.js?v=20251231-6",
+      "/js/state.js": "/js/state.js?v=20251231-6",
+      "/js/toast.js": "/js/toast.js?v=20251231-6",
+      "/js/ui.js": "/js/ui.js?v=20251231-6",
+      "/js/credits.js": "/js/credits.js?v=20251231-6",
+      "/js/api.js": "/js/api.js?v=20251231-6",
+      "/js/i18n.js": "/js/i18n.js?v=20251231-6",
+      "/js/events.js": "/js/events.js?v=20251231-6",
+      "/js/app.js": "/js/app.js?v=20251231-6"
+    },
+    "scopes": {
+      "/js/": {
+        "./constants.js": "/js/constants.js?v=20251231-6",
+        "./state.js": "/js/state.js?v=20251231-6",
+        "./toast.js": "/js/toast.js?v=20251231-6",
+        "./ui.js": "/js/ui.js?v=20251231-6",
+        "./credits.js": "/js/credits.js?v=20251231-6",
+        "./api.js": "/js/api.js?v=20251231-6",
+        "./i18n.js": "/js/i18n.js?v=20251231-6",
+        "./events.js": "/js/events.js?v=20251231-6"
+      }
+    }
+  }
+  </script>
 </head>
 
 <body>
@@ -16,69 +45,67 @@
       <nav class="nav-container">
         <div class="brand">
           <div class="brand-badge">Z</div>
-          做视频 · AI 视频内容生产平台
+          <span data-i18n="nav.brand">做视频 · AI 视频内容生产平台</span>
         </div>
         <div class="nav-cta">
+          <button class="btn btn-secondary" type="button" id="lang-toggle-btn"
+            data-i18n="lang.toggle">English/中文</button>
+
           <div class="contact-wrapper" id="contactTrigger">
-            <button class="btn btn-secondary" type="button">联系客服</button>
+            <button class="btn btn-secondary" type="button" data-i18n="nav.contact">联系客服</button>
             <div class="contact-popover" role="dialog" aria-hidden="true">
               <img src="/img/contact-qr.png" alt="联系客服二维码" />
-              <span>微信扫码联系：齐奥至</span>
+              <span data-i18n="nav.contact.qr">微信扫码联系：齐奥至</span>
             </div>
           </div>
-          <button class="btn btn-secondary" type="button" id="nav-login-btn">登录</button>
-          <button class="btn btn-primary" type="button" id="nav-register-btn">注册</button>
+          <button class="btn btn-primary" type="button" id="nav-login-btn" data-i18n="nav.login">登录</button>
         </div>
       </nav>
     </header>
 
     <main class="landing-main">
       <section class="hero">
-        <div class="hero-badge">
-          <span class="badge-icon">🎁</span>
-          <span class="badge-text">新用户限时福利：注册即送 100 积分</span>
-        </div>
-        <h1>批量制作，高质量，无水印 AI 视频</h1>
-        <p class="hero-subtitle">一键生成电商营销视频，支持 Sora 2 & Pro 模型</p>
+
+        <h1 data-i18n="hero.title">批量制作，高质量，无水印 AI 视频</h1>
+        <p class="hero-subtitle" data-i18n="hero.subtitle">一键生成电商营销视频，支持 Sora 2 & Pro 模型</p>
         <div class="hero-actions">
-          <button class="btn btn-primary btn-xl" type="button" id="hero-register-btn">免费开始制作</button>
-          <p class="hero-note">无需绑卡 · 注册即用</p>
+          <button class="btn btn-primary btn-xl" type="button" id="hero-login-btn" data-i18n="hero.cta">立即登录</button>
         </div>
       </section>
 
       <section class="models-section">
         <div class="models-grid">
           <article class="model-card">
-            <div class="model-label">Sora2</div>
+            <div class="model-label" data-i18n="model.sora2.label">Sora2</div>
             <div class="model-meta">
-              <span class="meta-chip">720p 输出</span>
+              <span class="meta-chip">720p</span>
               <span class="meta-chip">10s / 15s</span>
-              <span class="meta-chip">批量 50 条</span>
+              <span class="meta-chip">50 items</span>
             </div>
             <ul class="model-params">
-              <li>方向：横向 16:9、纵向 9:16</li>
-              <li>尺寸：720p</li>
-              <li>时长：10秒 / 15秒</li>
-              <li>积分：10分 / 15分</li>
-              <li>批量：同时支持10个任务，单个任务支持50条</li>
+              <li data-i18n="model.sora2.params.1">方向：横向 16:9、纵向 9:16</li>
+              <li data-i18n="model.sora2.params.2">尺寸：720p</li>
+              <li data-i18n="model.sora2.params.3">时长：10秒 / 15秒</li>
+              <li data-i18n="model.sora2.params.4">积分：10分 / 15分</li>
+              <li data-i18n="model.sora2.params.5">批量：同时支持10个任务，单个任务支持50条</li>
             </ul>
-            <p class="model-note">适合日常批量生成、快速复刻商品短视频。</p>
+            <p class="model-note" data-i18n="model.sora2.desc">适合日常批量生成、快速复刻商品短视频。</p>
           </article>
           <article class="model-card">
-            <div class="model-label">Sora2 Pro</div>
+            <div class="model-label" data-i18n="model.sora2pro.label">Sora2 Pro</div>
             <div class="model-meta">
-              <span class="meta-chip">1080p 输出</span>
-              <span class="meta-chip">最长 25s</span>
-              <span class="meta-chip">批量 50 条</span>
+              <span class="meta-chip">1080p</span>
+              <span class="meta-chip">Max 25s</span>
+              <span class="meta-chip">50 items</span>
             </div>
             <ul class="model-params">
-              <li>方向：横向 16:9、纵向 9:16</li>
-              <li>尺寸：1080p</li>
-              <li>时长：10秒 / 15秒 / 25秒</li>
-              <li>积分：50分 / 75分 / 100分</li>
-              <li>批量：同时支持10个任务，单个任务支持50条</li>
+              <li data-i18n="model.sora2pro.params.1">方向：横向 16:9、纵向 9:16</li>
+              <li data-i18n="model.sora2pro.params.2">尺寸：1080p</li>
+              <li data-i18n="model.sora2pro.params.3">时长：10秒 / 15秒 / 25秒</li>
+              <li data-i18n="model.sora2pro.params.4">积分：50分 / 75分 / 100分</li>
+              <li data-i18n="model.sora2pro.params.5">批量：同时支持10个任务，单个任务支持50条</li>
             </ul>
-            <p class="model-note">适合高质量投放素材、重点活动主视频等场景。</p>
+            <p class="model-note" data-i18n="model.sora2pro.desc">适合高质量投放素材、重点活动主视频等场景。</p>
           </article>
         </div>
       </section>
@@ -87,74 +114,77 @@
 
   <div id="auth-container" class="auth-container hidden">
     <div class="auth-header">
-      <button type="button" class="btn btn-link back-home-btn" id="back-home-btn">← 返回首页</button>
+      <button type="button" class="btn btn-link back-home-btn" id="back-home-btn" data-i18n="auth.back">← 返回首页</button>
     </div>
     <div class="auth-content">
       <div class="auth-columns">
         <div class="login-pane" id="auth-login">
-          <h2 class="auth-card-title">登录到 AI 视频生成平台</h2>
+          <h2 class="auth-card-title" data-i18n="auth.login.title">登录到 AI 视频生成平台</h2>
           <div class="login-card" id="login-card">
+            <!-- Google OAuth 登录 -->
+            <div class="oauth-section">
+              <a href="/api/auth/google/login" class="google-login-btn" id="google-login-btn">
+                <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+                  <path fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                <span data-i18n="auth.btn.google">使用 Google 账号登录</span>
+              </a>
+            </div>
+
+            <div class="login-divider">
+              <span data-i18n="auth.divider">或使用以下方式</span>
+            </div>
+
             <div class="login-tabs" id="login-tabs">
-              <button type="button" class="active" data-login-mode="sms">手机号快捷登录</button>
-              <button type="button" data-login-mode="password">账号密码登录</button>
+              <button type="button" class="active" data-login-mode="sms" data-i18n="auth.login.sms">手机号快捷登录</button>
+              <button type="button" data-login-mode="password" data-i18n="auth.login.password">账号密码登录</button>
             </div>
 
             <form id="sms-login-form" class="login-form" autocomplete="off" novalidate>
               <div class="form-group">
-                <label for="sms-mobile">手机号</label>
-                <input type="tel" id="sms-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13" />
+                <label for="sms-mobile" data-i18n="auth.field.mobile">手机号</label>
+                <input type="tel" id="sms-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13"
+                  data-i18n="auth.placeholder.mobile" />
               </div>
               <div class="form-group">
-                <label for="sms-code">验证码</label>
+                <label for="sms-code" data-i18n="auth.field.code">验证码</label>
                 <div class="sms-inline">
-                  <input type="text" id="sms-code" name="code" placeholder="请输入短信验证码" maxlength="6" />
-                  <button type="button" class="btn btn-secondary" id="sms-send-btn">获取验证码</button>
+                  <input type="text" id="sms-code" name="code" placeholder="请输入短信验证码" maxlength="6"
+                    data-i18n="auth.placeholder.code" />
+                  <button type="button" class="btn btn-secondary" id="sms-send-btn"
+                    data-i18n="auth.btn.get_code">获取验证码</button>
                 </div>
                 <div class="sms-countdown hidden" id="sms-countdown"></div>
               </div>
-              <button type="submit" class="btn btn-primary" id="sms-login-submit">登录 / 注册</button>
+              <button type="submit" class="btn btn-primary" id="sms-login-submit" data-i18n="auth.btn.login">登录</button>
               <div class="error-msg" id="sms-login-error"></div>
             </form>
 
             <form id="login-form" class="login-form hidden" autocomplete="off" novalidate>
               <div class="form-group">
-                <label for="login-username">用户名</label>
-                <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username" />
+                <label for="login-username" data-i18n="auth.field.username">用户名</label>
+                <input type="text" id="login-username" name="username" placeholder="请输入用户名" autocomplete="username"
+                  data-i18n="auth.placeholder.username" />
               </div>
               <div class="form-group">
-                <label for="login-password">密码</label>
+                <label for="login-password" data-i18n="auth.field.password">密码</label>
                 <input type="password" id="login-password" name="password" placeholder="请输入密码"
-                  autocomplete="current-password" />
+                  autocomplete="current-password" data-i18n="auth.placeholder.password" />
               </div>
-              <button type="submit" class="btn btn-primary" id="login-submit">登录</button>
+              <button type="submit" class="btn btn-primary" id="login-submit" data-i18n="auth.btn.login">登录</button>
               <div class="error-msg" id="login-error"></div>
             </form>
           </div>
         </div>
 
-        <div class="register-card" id="auth-register">
-          <h2 class="auth-card-title">快速注册账号</h2>
-          <form id="register-form" autocomplete="off" novalidate>
-            <div class="form-group">
-              <label for="register-mobile">手机号</label>
-              <input type="tel" id="register-mobile" name="mobile" placeholder="请输入 11 位手机号" maxlength="13" />
-            </div>
-            <div class="form-group">
-              <label for="register-code">验证码</label>
-              <div class="sms-inline">
-                <input type="text" id="register-code" name="code" placeholder="请输入短信验证码" maxlength="6" />
-                <button type="button" class="btn btn-secondary" id="register-send-btn">
-                  获取验证码
-                </button>
-              </div>
-              <div class="sms-countdown hidden" id="register-countdown"></div>
-            </div>
-            <button type="submit" class="btn btn-primary" id="register-submit">完成注册</button>
-          </form>
-          <div style="text-align:center; margin-top:16px;">
-            已有账号？<a href="#auth-login" class="btn-link" style="margin-top:0;" id="go-to-login-link">直接登录</a>
-          </div>
-        </div>
+
       </div>
     </div>
   </div>
@@ -162,12 +192,12 @@
   <div id="app-container" class="container hidden">
     <header>
       <div class="header-left">
-        <h1 style="cursor:pointer" id="nav-home-btn">🎬 AI视频批量生成</h1>
+        <h1 style="cursor:pointer" id="nav-home-btn" data-i18n="app.header.title">🎬 AI视频批量生成</h1>
       </div>
       <div class="user-info">
         <span id="user-display"></span>
         <span id="user-credits" class="text-muted clickable" title="点击充值" style="cursor:pointer"></span>
-        <button type="button" class="btn btn-secondary" id="logout-btn">退出登录</button>
+        <button type="button" class="btn btn-secondary" id="logout-btn" data-i18n="app.btn.logout">退出登录</button>
       </div>
     </header>
 
@@ -176,78 +206,81 @@
       <div class="card">
         <div class="three-col-layout">
           <div class="col-image">
-            <h3 class="section-title">图片</h3>
+            <h3 class="section-title" data-i18n="create.section.image">图片</h3>
             <input type="file" id="image-file" class="image-input" accept="image/png, image/jpeg" />
             <div id="image-filename" class="image-filename hidden"></div>
             <img id="thumb" class="hidden" alt="上传预览" />
-            <button type="button" class="btn btn-secondary remove-btn hidden" id="remove-img">删除图片</button>
+            <button type="button" class="btn btn-secondary remove-btn hidden" id="remove-img"
+              data-i18n="create.btn.delete_image">删除图片</button>
           </div>
 
           <div class="col-prompt">
-            <h3 class="section-title">提示词 Prompt</h3>
-            <textarea id="prompt" class="prompt-textarea" placeholder="请输入视频生成提示词（必填，≤10000字符）"></textarea>
+            <h3 class="section-title" data-i18n="create.section.prompt">提示词 Prompt</h3>
+            <textarea id="prompt" class="prompt-textarea" placeholder="请输入视频生成提示词（必填，≤10000字符）"
+              data-i18n="create.placeholder.prompt"></textarea>
           </div>
 
           <div class="col-params">
-            <h3 class="section-title">模型参数</h3>
+            <h3 class="section-title" data-i18n="create.section.params">模型参数</h3>
             <div class="param-group">
-              <label for="model">模型</label>
+              <label for="model" data-i18n="create.label.model">模型</label>
               <select id="model">
-                <option value="sora-2">Sora 2</option>
-                <option value="sora-2-pro">Sora 2 Pro</option>
+                <option value="sora-2-all">Sora 2</option>
+                <option value="sora-2-pro-all">Sora 2 Pro</option>
               </select>
             </div>
             <div class="param-group">
-              <label for="orientation">方向</label>
+              <label for="orientation" data-i18n="create.label.orientation">方向</label>
               <select id="orientation">
-                <option value="landscape">横向</option>
-                <option value="portrait">纵向</option>
+                <option value="landscape" data-i18n="create.option.landscape">横向</option>
+                <option value="portrait" data-i18n="create.option.portrait">纵向</option>
               </select>
             </div>
             <div class="param-group">
-              <label for="size">尺寸</label>
+              <label for="size" data-i18n="create.label.size">尺寸</label>
               <select id="size">
                 <option value="small">720p</option>
                 <option value="large">1080p</option>
               </select>
             </div>
             <div class="param-group">
-              <label for="duration">时长</label>
+              <label for="duration" data-i18n="create.label.duration">时长</label>
               <select id="duration"></select>
             </div>
             <div class="param-group">
-              <label for="num-videos">视频数量</label>
+              <label for="num-videos" data-i18n="create.label.num_videos">视频数量</label>
               <input type="number" id="num-videos" value="1" min="1" max="50" />
             </div>
           </div>
         </div>
 
         <div class="generate-btn-container">
-          <button type="button" class="generate-btn" id="generate-btn">🎬 生成视频</button>
+          <button type="button" class="generate-btn" id="generate-btn" data-i18n="create.btn.generate">🎬 生成视频</button>
         </div>
       </div>
 
       <div class="card">
-        <h3>任务管理 <span class="text-muted subtitle">(点击行查看详情)</span></h3>
+        <h3><span data-i18n="batch.title">任务管理</span> <span class="text-muted subtitle"
+            data-i18n="batch.subtitle">(点击行查看详情)</span></h3>
         <table id="batch-table">
           <thead>
             <tr>
-              <th style="width:50px;">序号</th>
-              <th style="width:160px;">创建时间</th>
-              <th style="width:100px;">完成用时</th>
-              <th style="width:300px;">提示词</th>
-              <th style="width:80px;">图片</th>
-              <th style="width:160px;">状态</th>
-              <th style="width:240px;">操作</th>
+              <th style="width:50px;" data-i18n="batch.col.index">序号</th>
+              <th style="width:160px;" data-i18n="batch.col.created">创建时间</th>
+              <th style="width:100px;" data-i18n="batch.col.duration">完成用时</th>
+              <th style="width:300px;" data-i18n="batch.col.prompt">提示词</th>
+              <th style="width:80px;" data-i18n="batch.col.image">图片</th>
+              <th style="width:160px;" data-i18n="batch.col.status">状态</th>
+              <th style="width:240px;" data-i18n="batch.col.action">操作</th>
             </tr>
           </thead>
           <tbody id="batch-tbody"></tbody>
         </table>
 
         <div class="pagination">
-          <button type="button" class="btn btn-secondary" id="prev-page">上一页</button>
+          <button type="button" class="btn btn-secondary" id="prev-page" data-i18n="batch.btn.prev">上一页</button>
           <div id="page-info" class="text-muted">第 1 / 1 页</div>
-          <button type="button" class="btn btn-secondary" id="next-page">下一页</button>
+          <button type="button" class="btn btn-secondary" id="next-page" data-i18n="batch.btn.next">下一页</button>
         </div>
       </div>
     </div>
@@ -257,74 +290,120 @@
       <div class="credits-modal">
         <button type="button" class="close-credits-btn" id="close-credits-btn">×</button>
         <div class="card" style="margin-bottom:0; box-shadow:none;">
-          <h2 class="section-title">积分充值</h2>
+          <h2 class="section-title" data-i18n="credits.title">积分充值</h2>
           <div class="recharge-panel">
-            <div class="recharge-options">
-              <div class="recharge-option selected" data-amount="9.9" data-credits="100">
-                <div class="credits">100 积分</div>
-                <div class="price">¥ 9.9</div>
+            <!-- 支付方式切换 Tab -->
+            <div class="payment-tabs" id="payment-tabs">
+              <button type="button" class="payment-tab active" data-payment-type="wechat">
+                <span style="color:#07c160;font-weight:bold;margin-right:4px;">微</span>
+                微信支付
+              </button>
+              <button type="button" class="payment-tab" data-payment-type="stripe">
+                💳 信用卡
+              </button>
+            </div>
+
+            <!-- Stripe 信用卡支付区域 -->
+            <div class="stripe-section hidden" id="stripe-payment-section">
+              <div class="recharge-options" id="stripe-packages">
+                <div class="recharge-option selected" data-package-id="pkg_100">
+                  <div class="credits">100 积分</div>
+                  <div class="price">$1.99</div>
+                </div>
+                <div class="recharge-option" data-package-id="pkg_500">
+                  <div class="credits">500 积分</div>
+                  <div class="price">$8.99</div>
+                  <div class="badge" data-i18n="misc.hot">热销</div>
+                </div>
+                <div class="recharge-option" data-package-id="pkg_1000">
+                  <div class="credits">1000 积分</div>
+                  <div class="price">$15.99</div>
+                </div>
               </div>
-              <div class="recharge-option" data-amount="44.9" data-credits="500">
-                <div class="credits">500 积分</div>
-                <div class="price">¥ 44.9</div>
-                <div class="badge">热销</div>
-              </div>
-              <div class="recharge-option" data-amount="89.9" data-credits="1000">
-                <div class="credits">1000 积分</div>
-                <div class="price">¥ 89.9</div>
-              </div>
-              <div class="recharge-option custom" id="custom-recharge-option">
-                <div class="credits">自定义金额</div>
-                <input type="number" id="custom-amount" placeholder="输入金额" min="1" step="1">
+              <div style="text-align:center; margin-top: 20px;">
+                <button class="btn btn-primary btn-large" id="btn-stripe-pay">
+                  💳 使用 Stripe 支付 $<span id="stripe-amount-display">1.99</span>
+                </button>
+                <div class="tip text-muted">支持 Visa、Mastercard、American Express 等</div>
               </div>
             </div>
 
-            <div class="payment-section">
-              <h3 class="label">支付方式</h3>
-              <div class="payment-methods">
-                <label class="payment-method selected">
-                  <input type="radio" name="payment" value="alipay" checked>
-                  <span class="icon alipay">支</span> 支付宝
-                </label>
-                <label class="payment-method">
-                  <input type="radio" name="payment" value="wechat">
-                  <span class="icon wechat">微</span> 微信支付
-                </label>
+
+            <!-- 微信 CNY 支付区域 -->
+            <div class="wechat-section" id="wechat-payment-section">
+              <div class="recharge-options" id="wechat-packages">
+                <div class="recharge-option selected" data-package-id="pkg_100">
+                  <div class="credits">100 积分</div>
+                  <div class="price">¥14</div>
+                </div>
+                <div class="recharge-option" data-package-id="pkg_500">
+                  <div class="credits">500 积分</div>
+                  <div class="price">¥64</div>
+                  <div class="badge">推荐</div>
+                </div>
+                <div class="recharge-option" data-package-id="pkg_1000">
+                  <div class="credits">1000 积分</div>
+                  <div class="price">¥115</div>
+                </div>
+                <div class="recharge-option custom" data-package-id="pkg_custom">
+                  <div class="credits">自定义金额</div>
+                  <input type="number" id="wechat-custom-amount" placeholder="输入金额" min="1" step="1">
+                </div>
               </div>
-              <div style="text-align:center;">
-                <button class="btn btn-primary btn-large" id="btn-pay">立即充值 ¥ <span
-                    id="pay-amount-display">9.9</span></button>
-                <div class="tip text-muted">充值比例：1元 ≈ 10积分（套餐更优惠）</div>
+              <div class="tip text-muted" style="text-align:center; margin-top: 12px;">扫码支付，人民币结算（1元=10积分）</div>
+
+              <!-- 微信支付二维码显示区域 - 默认显示 -->
+              <div id="wechat-qr-container" class="qr-container">
+                <div class="qr-header" style="color: #07c160;">
+                  <span>请使用微信扫描二维码完成支付</span>
+                </div>
+                <div class="qr-content">
+                  <div class="qr-loading" id="wechat-qr-loading">
+                    <div class="spinner" style="border-top-color: #07c160;"></div>
+                    正在生成支付二维码...
+                  </div>
+                  <img id="wechat-qr-image" class="qr-image hidden" alt="微信支付二维码">
+                  <div class="qr-info">
+                    <div class="amount">支付金额: <strong>¥<span id="wechat-qr-pay-amount">14</span></strong></div>
+                    <div class="credits-info">充值积分: <strong><span id="wechat-qr-credits-amount">100</span> 积分</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="qr-status" id="wechat-pay-status">
+                  <span class="status-waiting">⏳ 等待支付中...</span>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
 
         <div class="card">
-          <h3 class="section-title">积分变动历史</h3>
+          <h3 class="section-title" data-i18n="credits.history.title">积分变动历史</h3>
           <table id="credits-table">
             <thead>
               <tr>
-                <th>时间</th>
-                <th>变动原因</th>
-                <th>积分变动</th>
-                <th>关联ID</th>
+                <th data-i18n="credits.col.time">时间</th>
+                <th data-i18n="credits.col.reason">变动原因</th>
+                <th data-i18n="credits.col.change">积分变动</th>
+                <th data-i18n="credits.col.related_id">关联ID</th>
               </tr>
             </thead>
             <tbody id="credits-tbody"></tbody>
           </table>
           <div class="pagination">
-            <button type="button" class="btn btn-secondary" id="credits-prev-page">上一页</button>
+            <button type="button" class="btn btn-secondary" id="credits-prev-page"
+              data-i18n="credits.btn.prev">上一页</button>
             <div id="credits-page-info" class="text-muted">第 1 / 1 页</div>
-            <button type="button" class="btn btn-secondary" id="credits-next-page">下一页</button>
+            <button type="button" class="btn btn-secondary" id="credits-next-page"
+              data-i18n="credits.btn.next">下一页</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=20251113-1"></script>
-  <script type="module" src="/js/register.js?v=20251113-1"></script>
+  <script type="module" src="/js/app.js?v=20251231-1"></script>
   <script>
     (function () {
       const wrapper = document.getElementById('contactTrigger');
@@ -346,26 +425,15 @@
       const landingContainer = document.getElementById('login-container');
       const authContainer = document.getElementById('auth-container');
       const loginBtn = document.getElementById('nav-login-btn');
-      const registerBtn = document.getElementById('nav-register-btn');
-      const heroRegisterBtn = document.getElementById('hero-register-btn');
+      const heroLoginBtn = document.getElementById('hero-login-btn');
       const backHomeBtn = document.getElementById('back-home-btn');
-      const goToLoginLink = document.getElementById('go-to-login-link');
 
       const authLoginPane = document.getElementById('auth-login');
-      const authRegisterPane = document.getElementById('auth-register');
 
-      const showAuthView = (mode) => {
+      const showLoginView = () => {
         landingContainer.classList.add('hidden');
         authContainer.classList.remove('hidden');
-
-        // 简单的显示/隐藏逻辑，实际项目中可能需要更复杂的 Tab 切换
-        if (mode === 'register') {
-          authLoginPane.style.display = 'none';
-          authRegisterPane.style.display = 'block';
-        } else {
-          authLoginPane.style.display = 'block';
-          authRegisterPane.style.display = 'none';
-        }
+        authLoginPane.style.display = 'block';
       };
 
       const showLandingView = () => {
@@ -373,15 +441,9 @@
         landingContainer.classList.remove('hidden');
       };
 
-      loginBtn?.addEventListener('click', () => showAuthView('login'));
-      registerBtn?.addEventListener('click', () => showAuthView('register'));
-      heroRegisterBtn?.addEventListener('click', () => showAuthView('register'));
+      loginBtn?.addEventListener('click', showLoginView);
+      heroLoginBtn?.addEventListener('click', showLoginView);
       backHomeBtn?.addEventListener('click', showLandingView);
-
-      goToLoginLink?.addEventListener('click', (e) => {
-        e.preventDefault();
-        showAuthView('login');
-      });
     })();
   </script>
 </body>

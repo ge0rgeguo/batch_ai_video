@@ -128,4 +128,30 @@ export function pullUserProfile() {
   return request('/api/me');
 }
 
+// Stripe 支付相关 API
+export function getStripeConfig() {
+  return request('/api/stripe/config', { silent: true });
+}
+
+export function createStripeCheckout(packageId) {
+  return request(`/api/stripe/create-checkout-session?package_id=${packageId}`, { method: 'POST' });
+}
+
+export function createAlipayPayment(packageId) {
+  return request(`/api/stripe/create-alipay-payment?package_id=${packageId}`, { method: 'POST' });
+}
+
+export function createWechatPayment(packageId, customAmount = null) {
+  const params = [`package_id=${packageId}`];
+  if (customAmount !== null) {
+    params.push(`custom_amount=${customAmount}`);
+  }
+  return request(`/api/stripe/create-wechat-payment?${params.join('&')}`, { method: 'POST' });
+}
+
+export function getStripePaymentStatus(orderId) {
+  return request(`/api/stripe/payment-status/${orderId}`, { silent: true });
+}
+
 export { request as apiRequest };
+

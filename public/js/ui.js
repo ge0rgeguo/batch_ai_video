@@ -1,4 +1,5 @@
 import { MODEL_CONFIG, BATCH_STATUS_META, TASK_STATUS_META } from './constants.js';
+import { t } from './i18n.js';
 
 const tooltipEstimatedHeight = 200;
 
@@ -38,11 +39,11 @@ export function updateUserInfo(user) {
   const display = selectors.userDisplay();
   const credits = selectors.userCredits();
   if (display) {
-    display.textContent = user ? `👤 ${user.username}` : '';
+    display.textContent = user ? t('misc.user', { username: user.username }) : '';
   }
   if (credits) {
     const creditValue = user?.credits ?? 0;
-    credits.textContent = `💎 积分：${creditValue}`;
+    credits.textContent = t('misc.credits', { credits: creditValue });
   }
 }
 
@@ -66,20 +67,20 @@ export function switchAppView(viewName) {
 export function updatePagination(page, totalPages) {
   const pageInfo = selectors.pageInfo();
   if (pageInfo) {
-    pageInfo.textContent = `第 ${page} / ${Math.max(totalPages, 1)} 页`;
+    pageInfo.textContent = t('misc.page_info', { current: page, total: Math.max(totalPages, 1) });
   }
 }
 
 export function initDurationOptions() {
   const modelSelect = selectors.modelSelect();
   if (!modelSelect) return;
-  updateDurationOptions(modelSelect.value || 'sora-2');
+  updateDurationOptions(modelSelect.value || 'sora-2-all');
 }
 
 export function updateDurationOptions(model) {
   const durationSelect = selectors.durationSelect();
   const sizeSelect = selectors.sizeSelect();
-  const config = MODEL_CONFIG[model] || MODEL_CONFIG['sora-2'];
+  const config = MODEL_CONFIG[model] || MODEL_CONFIG['sora-2-all'];
 
   if (durationSelect) {
     const currentValue = durationSelect.value;
@@ -88,7 +89,7 @@ export function updateDurationOptions(model) {
       const option = document.createElement('option');
       option.value = String(duration);
       const cost = config.pricing[duration] || 0;
-      option.textContent = `${duration}秒 (${cost}分)`;
+      option.textContent = `${duration}${t('misc.seconds')} (${cost}${t('misc.points')})`;
       durationSelect.appendChild(option);
     });
     if (config.durations.includes(Number(currentValue))) {
@@ -231,9 +232,9 @@ export function renderTaskDetail(batchId, tasks) {
     const resultHtml = buildResultCell(task, resultUrl);
 
     // 构建状态显示，如果是 in_progress 且有 progress 字段，显示进度
-    let statusDisplay = statusMeta.label;
+    let statusDisplay = t(`status.${task.status}`) || t('status.pending');
     if (task.status === 'in_progress' && task.progress) {
-      statusDisplay = `${statusMeta.label} (${task.progress})`;
+      statusDisplay = `${statusDisplay} (${task.progress})`;
     }
 
     // 计算任务用时（优先使用云雾返回的开始/结束时间）
@@ -248,9 +249,9 @@ export function renderTaskDetail(batchId, tasks) {
       <td>${resultHtml}</td>
       <td>
         <div class="action-buttons">
-          ${resultUrl ? `<button type="button" class="btn btn-primary" data-action="download-task" data-task-id="${task.id}" data-result-url="${escapeHtml(resultUrl)}" data-batch-id="${batchId}">下载</button>` : ''}
-          ${task.status === 'failed' ? `<button type="button" class="btn btn-primary" data-action="retry-task" data-task-id="${task.id}" data-batch-id="${batchId}">重试</button>` : ''}
-          <button type="button" class="btn btn-danger" data-action="delete-task" data-task-id="${task.id}" data-batch-id="${batchId}">删除</button>
+          ${resultUrl ? `<button type="button" class="btn btn-primary" data-action="download-task" data-task-id="${task.id}" data-result-url="${escapeHtml(resultUrl)}" data-batch-id="${batchId}">${t('btn.download')}</button>` : ''}
+          ${task.status === 'failed' ? `<button type="button" class="btn btn-primary" data-action="retry-task" data-task-id="${task.id}" data-batch-id="${batchId}">${t('btn.retry')}</button>` : ''}
+          <button type="button" class="btn btn-danger" data-action="delete-task" data-task-id="${task.id}" data-batch-id="${batchId}">${t('btn.delete')}</button>
         </div>
       </td>
     `;
@@ -279,7 +280,7 @@ export function toggleBatchExpansion(batchId, expanded) {
   const toggleBtn = row.querySelector('[data-action="toggle-detail"]');
   if (toggleBtn) {
     toggleBtn.setAttribute('aria-expanded', String(expanded));
-    toggleBtn.innerHTML = `<span class="expand-icon ${expanded ? 'expanded' : ''}">▶</span>${expanded ? '收起' : '查看'}`;
+    toggleBtn.innerHTML = `<span class="expand-icon ${expanded ? 'expanded' : ''}">▶</span>${expanded ? t('btn.collapse') : t('btn.expand')}`;
   }
 
   if (!expanded) {
@@ -391,10 +392,10 @@ function buildBatchRow(batch, displayIndex, expanded) {
   actionCell.innerHTML = `
     <div class="action-buttons">
       <button type="button" class="btn btn-secondary" data-action="toggle-detail" data-batch-id="${batch.id}" aria-expanded="${expanded}">
-        <span class="expand-icon ${expanded ? 'expanded' : ''}">▶</span>${expanded ? '收起' : '查看'}
+        <span class="expand-icon ${expanded ? 'expanded' : ''}">▶</span>${expanded ? t('btn.collapse') : t('btn.expand')}
       </button>
-      <button type="button" class="btn btn-primary" data-action="refill-batch" data-batch-id="${batch.id}">再来一批</button>
-      <button type="button" class="btn btn-danger" data-action="delete-batch" data-batch-id="${batch.id}">删除</button>
+      <button type="button" class="btn btn-primary" data-action="refill-batch" data-batch-id="${batch.id}">${t('btn.refill')}</button>
+      <button type="button" class="btn btn-danger" data-action="delete-batch" data-batch-id="${batch.id}">${t('btn.delete')}</button>
     </div>
   `;
   row.appendChild(actionCell);
@@ -410,17 +411,17 @@ function buildTaskDetailShell(batchId) {
     <td colspan="7" class="tasks-detail-cell">
       <div class="tasks-inner-container">
         <div class="tasks-actions">
-          <button type="button" class="btn btn-secondary" data-action="retry-failed" data-batch-id="${batchId}">重试失败</button>
-          <button type="button" class="btn btn-secondary" data-action="download-batch" data-batch-id="${batchId}">一键下载</button>
+          <button type="button" class="btn btn-secondary" data-action="retry-failed" data-batch-id="${batchId}">${t('btn.retry_failed')}</button>
+          <button type="button" class="btn btn-secondary" data-action="download-batch" data-batch-id="${batchId}">${t('btn.download_batch')}</button>
         </div>
         <table class="tasks-table">
           <thead>
             <tr>
-              <th style="width:50px;">序号</th>
-              <th style="width:160px;">状态</th>
-              <th style="width:100px;">用时</th>
+              <th style="width:50px;">${t('batch.col.index')}</th>
+              <th style="width:160px;">${t('batch.col.status')}</th>
+              <th style="width:100px;">${t('batch.col.duration')}</th>
               <th style="width:380px;">结果</th>
-              <th style="width:240px;">操作</th>
+              <th style="width:240px;">${t('batch.col.action')}</th>
             </tr>
           </thead>
           <tbody id="tasks-tbody-${batchId}"></tbody>
@@ -433,9 +434,10 @@ function buildTaskDetailShell(batchId) {
 
 function buildStatusCellContent(batch) {
   const meta = resolveBatchStatus(batch);
+  const statusLabel = t(`batch.status.${meta.key}`) || meta.label;
   return `
-    <span class="${meta.className}" style="color:${meta.color};font-weight:600;">${meta.label}</span><br />
-    <small class="text-muted">总:${batch.total} 完成:${batch.completed} 失败:${batch.failed}</small>
+    <span class="${meta.className}" style="color:${meta.color};font-weight:600;">${statusLabel}</span><br />
+    <small class="text-muted">${t('misc.total_completed_failed', { total: batch.total, completed: batch.completed, failed: batch.failed })}</small>
   `;
 }
 
@@ -447,15 +449,15 @@ function updateBatchStatusCell(row, batch) {
 
 function resolveBatchStatus(batch) {
   if (batch.running > 0 || batch.queued > 0) {
-    return BATCH_STATUS_META.running;
+    return { ...BATCH_STATUS_META.running, key: 'running' };
   }
   if (batch.failed > 0) {
-    return BATCH_STATUS_META.partialFailed;
+    return { ...BATCH_STATUS_META.partialFailed, key: 'partialFailed' };
   }
   if (batch.completed === batch.total && batch.total > 0) {
-    return BATCH_STATUS_META.completed;
+    return { ...BATCH_STATUS_META.completed, key: 'completed' };
   }
-  return BATCH_STATUS_META.queued;
+  return { ...BATCH_STATUS_META.queued, key: 'queued' };
 }
 
 function buildPromptPreview(prompt = '') {
@@ -514,12 +516,12 @@ function formatDuration(createdAt, updatedAt, status) {
 
   const parts = [];
   if (hours > 0) {
-    parts.push(`${hours}时`);
+    parts.push(`${hours}${t('misc.hours')}`);
   }
   if (minutes > 0 || hours > 0) {
-    parts.push(`${minutes}分`);
+    parts.push(`${minutes}${t('misc.minutes')}`);
   }
-  parts.push(`${seconds}秒`);
+  parts.push(`${seconds}${t('misc.seconds')}`);
 
   return parts.join('');
 }
@@ -531,13 +533,13 @@ function resolveResultUrl(path) {
   }
   return `/temp-results/${path}`;
 }
-
 function buildResultCell(task, resultUrl) {
   if (resultUrl) {
     return `<a class="btn-link result-link" href="${resultUrl}" target="_blank" rel="noopener noreferrer">查看视频</a>`;
   }
   if (task.error_summary) {
-    return `<span style="color:#e53e3e;font-size:12px;">${escapeHtml(task.error_summary)}</span>`;
+    return `<span style="color:#e53e3e;font-size:12px;"><strong>${t('batch.col.fail_reason')}:</strong> ${escapeHtml(task.error_summary)}</span>`;
   }
   return '<span class="text-muted">-</span>';
 }
+

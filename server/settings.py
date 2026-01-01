@@ -2,6 +2,9 @@ import os
 from datetime import timedelta
 from typing import Optional
 
+from dotenv import load_dotenv
+load_dotenv()  # 加载 .env 文件
+
 
 class Settings:
     """Centralized application settings with sensible defaults for Colab.
@@ -81,6 +84,24 @@ class Settings:
     WECHAT_PAY_APIV3_KEY: Optional[str] = os.environ.get("WECHAT_PAY_APIV3_KEY")
     WECHAT_PAY_CERT_SERIAL_NO: Optional[str] = os.environ.get("WECHAT_PAY_CERT_SERIAL_NO")
     WECHAT_PAY_PRIVATE_KEY: Optional[str] = os.environ.get("WECHAT_PAY_PRIVATE_KEY")
+
+    # Google OAuth Settings
+    # TODO: 填写你的 Google OAuth 凭据（从 Google Cloud Console 获取）
+    # 1. 访问 https://console.cloud.google.com/apis/credentials
+    # 2. 创建 OAuth 2.0 Client ID（Web application 类型）
+    # 3. 添加授权重定向 URI: http://localhost:8888/api/auth/google/callback
+    GOOGLE_CLIENT_ID: Optional[str] = os.environ.get("GOOGLE_CLIENT_ID", "")  # TODO: 填写
+    GOOGLE_CLIENT_SECRET: Optional[str] = os.environ.get("GOOGLE_CLIENT_SECRET", "")  # TODO: 填写
+    GOOGLE_REDIRECT_URI: str = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:8888/api/auth/google/callback")
+
+    # Stripe Payment Settings
+    # TODO: 填写你的 Stripe 密钥（从 Stripe Dashboard 获取）
+    # 1. 访问 https://dashboard.stripe.com/apikeys
+    # 2. 获取 Publishable key 和 Secret key
+    # 3. 配置 Webhook 后获取 Webhook Signing Secret
+    STRIPE_SECRET_KEY: Optional[str] = os.environ.get("STRIPE_SECRET_KEY", "")  # TODO: 填写 sk_test_... 或 sk_live_...
+    STRIPE_PUBLISHABLE_KEY: Optional[str] = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")  # TODO: 填写 pk_test_... 或 pk_live_...
+    STRIPE_WEBHOOK_SECRET: Optional[str] = os.environ.get("STRIPE_WEBHOOK_SECRET", "")  # TODO: 填写 whsec_...
 
     @property
     def BASE_URL(self) -> str:

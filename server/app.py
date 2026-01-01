@@ -58,8 +58,40 @@ from .providers.aliyun_sms import client as sms_client, AliyunSmsError
 from .sms_rate_limit import ensure_sms_rate_limit
 from .providers.payment import payment_service
 from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
+from starlette.middleware.sessions import SessionMiddleware
+from authlib.integrations.starlette_client import OAuth
 
 app = FastAPI(title="Video Generation Batch API", docs_url=None, redoc_url=None)
+
+# Session middleware for OAuth state (使用随机密钥，生产环境中应该固定)
+# TODO: 在生产环境中设置固定的 SESSION_SECRET 环境变量
+app.add_middleware(
+    SessionMiddleware, 
+    secret_key=os.environ.get("SESSION_SECRET", secrets.token_urlsafe(32))
+)
+
+# Google OAuth 客户端配置
+oauth = OAuth()
+if settings.GOOGLE_CLIENT_ID and settings.GOOGLE_CLIENT_SECRET:
+    oauth.register(
+        name='google',
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'}
+    )
+    print("✅ Google OAuth 已配置")
+else:
+    print("⚠️  Google OAuth 未配置（GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET 未设置）")
+
+# Stripe 支付配置
+import stripe
+if settings.STRIPE_SECRET_KEY:
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    print("✅ Stripe 支付已配置")
+else:
+    print("⚠️  Stripe 支付未配置（STRIPE_SECRET_KEY 未设置）")
 
 
 MOBILE_REGEX = re.compile(r"^(?:\+?86)?1\d{10}$")
@@ -170,6 +202,105 @@ def login(req: LoginRequest, response: Response, db: Session = Depends(get_db)) 
 def logout(response: Response, user: User = Depends(get_current_user)) -> ApiResponse[None]:
     clear_session_cookie(response)
     return ok(None)
+
+
+# -------------------------------------------------------------------------
+# Google OAuth 登录
+# -------------------------------------------------------------------------
+
+@app.get("/api/auth/google/login")
+async def google_login(request: Request):
+    """发起 Google OAuth 登录"""
+    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google OAuth 未配置，请联系管理员"
+        )
+    redirect_uri = settings.GOOGLE_REDIRECT_URI
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@app.get("/api/auth/google/callback")
+async def google_callback(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Google OAuth 回调处理"""
+    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google OAuth 未配置"
+        )
+    
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except Exception as e:
+        print(f"[google_callback] OAuth error: {e}")
+        # 重定向到登录页并显示错误
+        return RedirectResponse(url="/?error=google_auth_failed")
+    
+    user_info = token.get('userinfo')
+    if not user_info or not user_info.get('email'):
+        return RedirectResponse(url="/?error=google_no_email")
+    
+    email = user_info['email']
+    google_id = user_info.get('sub')  # Google 用户唯一ID
+    name = user_info.get('name', email.split('@')[0])
+    
+    # 查找现有用户（优先按 google_id，其次按 email）
+    user = db.query(User).filter(User.google_id == google_id).first()
+    if not user:
+        user = db.query(User).filter(User.email == email).first()
+    
+    if user is None:
+        # 创建新用户
+        username = email.split('@')[0]
+        # 确保用户名唯一
+        base_username = username
+        counter = 1
+        while db.query(User).filter(User.username == username).first():
+            username = f"{base_username}_{counter}"
+            counter += 1
+        
+        user = User(
+            username=username,
+            email=email,
+            google_id=google_id,
+            password_hash=hash_password(secrets.token_urlsafe(32)),  # 随机密码
+            is_admin=False,
+            enabled=True,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        # 新用户赠送 100 积分
+        db.add(CreditTransaction(user_id=user.id, delta=100, reason="new_user_gift"))
+        db.commit()
+        print(f"[google_callback] 新用户注册: {email}")
+    else:
+        # 更新 google_id（如果之前是通过其他方式注册的）
+        if not user.google_id:
+            user.google_id = google_id
+            db.add(user)
+            db.commit()
+        
+        if not user.enabled:
+            return RedirectResponse(url="/?error=account_disabled")
+        print(f"[google_callback] 用户登录: {email}")
+    
+    # 创建会话
+    session = create_session(db, user)
+    
+    # 创建重定向响应并设置 cookie
+    redirect_response = RedirectResponse(url="/", status_code=302)
+    redirect_response.set_cookie(
+        key=settings.SESSION_COOKIE_NAME,
+        value=session.id,
+        httponly=True,
+        max_age=int(settings.SESSION_TTL.total_seconds()),
+        samesite="lax",
+        secure=False,
+        path="/",
+    )
+    return redirect_response
 
 
 def _get_user_credits(db: Session, user_id: int) -> int:
@@ -361,23 +492,8 @@ def verify_mobile_code(
 
     user = db.query(User).filter(User.mobile == mobile).first()
     if user is None:
-        username = mobile
-        if db.query(User).filter(User.username == username).first():
-            username = f"user_{mobile}"
-        user = User(
-            username=username,
-            mobile=mobile,
-            password_hash=hash_password(secrets.token_urlsafe(12)),
-            is_admin=False,
-            enabled=True,
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        
-        # 新用户赠送 100 积分
-        db.add(CreditTransaction(user_id=user.id, delta=100, reason="new_user_gift"))
-        db.commit()
+        # 注册功能已禁用，新用户需由管理员创建
+        return fail("用户不存在，请联系管理员注册账号")
     else:
         if not user.enabled:
             return fail("账号已禁用，请联系管理员")
@@ -431,14 +547,14 @@ def create_batch(
                 return fail("重复提交")
 
     # 校验模型与时长/尺寸组合
-    # sora-2: 10s/15s, 仅 small(720p)
-    # sora-2-pro: 10s/15s/25s, 仅 large(1080p)
+    # sora-2-all: 10s/15s, 仅 small(720p)
+    # sora-2-pro-all: 10s/15s/25s, 仅 large(1080p)
     model_constraints = {
-        "sora-2": {
+        "sora-2-all": {
             "durations": {10, 15},
             "allowed_sizes": {"small"},
         },
-        "sora-2-pro": {
+        "sora-2-pro-all": {
             "durations": {10, 15, 25},
             "allowed_sizes": {"large"},
         },
@@ -605,6 +721,9 @@ def delete_task(task_id: str, db: Session = Depends(get_db), user: User = Depend
     if not task or task.user_id != user.id:
         return fail("任务不存在")
     task.deleted_at = datetime.utcnow()
+    # 如果任务还在排队或待处理，标记为取消
+    if task.status in {TaskStatus.pending, TaskStatus.queued}:
+        task.status = TaskStatus.cancelled
     db.add(task)
     db.commit()
     recompute_batch_counters(db, task.batch_id)
@@ -619,6 +738,9 @@ def delete_batch(batch_id: str, db: Session = Depends(get_db), user: User = Depe
     batch.deleted_at = datetime.utcnow()
     for task in batch.tasks:
         task.deleted_at = datetime.utcnow()
+        # 如果任务还在排队或待处理，标记为取消
+        if task.status in {TaskStatus.pending, TaskStatus.queued}:
+            task.status = TaskStatus.cancelled
     db.add(batch)
     db.commit()
     return ok(None)
@@ -673,14 +795,9 @@ def download_zip(batch_id: str, db: Session = Depends(get_db), user: User = Depe
                         continue
                 else:
                     # 本地路径：直接添加
-                    # 兼容绝对路径（旧数据）和相对文件名（新数据）
-                    p = Path(task.result_path)
-                    if not p.is_absolute():
-                        p = Path(settings.RESULTS_BASE_DIR) / p
-                    
-                    if p.exists():
-                        fname = f"{i:03d}_{p.name}"
-                        zf.write(p, arcname=fname)
+                    if os.path.exists(task.result_path):
+                        fname = f"{i:03d}_{Path(task.result_path).name}"
+                        zf.write(task.result_path, arcname=fname)
                         manifest_lines.append(f"{fname}: {task.prompt[:100]}")
                         print(f"[download_zip] ✅ 已添加本地文件到 ZIP: {fname}")
             
@@ -769,6 +886,418 @@ def get_credit_history(
         "page_size": page_size
     })
 
+
+# -------------------------------------------------------------------------
+# Stripe 支付接口
+# -------------------------------------------------------------------------
+
+# Stripe 套餐配置（价格单位：美分）
+STRIPE_PACKAGES = [
+    {"id": "pkg_100", "price_cents": 199, "credits": 100, "display": "$1.99 = 100 积分"},
+    {"id": "pkg_500", "price_cents": 899, "credits": 500, "display": "$8.99 = 500 积分"},
+    {"id": "pkg_1000", "price_cents": 1599, "credits": 1000, "display": "$15.99 = 1000 积分"},
+]
+
+
+@app.get("/api/stripe/config")
+def get_stripe_config(user: User = Depends(get_current_user)) -> ApiResponse[dict]:
+    """获取 Stripe 前端配置"""
+    if not settings.STRIPE_PUBLISHABLE_KEY:
+        return fail("Stripe 支付未配置")
+    
+    return ok({
+        "publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+        "packages": STRIPE_PACKAGES
+    })
+
+
+@app.post("/api/stripe/create-checkout-session")
+def create_stripe_checkout(
+    request: Request,
+    package_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
+    """创建 Stripe Checkout 会话"""
+    if not settings.STRIPE_SECRET_KEY:
+        return fail("Stripe 支付未配置，请联系管理员")
+    
+    # 查找套餐
+    package = next((p for p in STRIPE_PACKAGES if p["id"] == package_id), None)
+    if not package:
+        return fail("无效的套餐")
+    
+    # 创建订单记录
+    order_id = f"stripe_{uuid.uuid4().hex[:16]}"
+    order = RechargeOrder(
+        id=order_id,
+        user_id=user.id,
+        amount=package["price_cents"],  # 美分
+        credits=package["credits"],
+        payment_method="stripe",
+        status="pending"
+    )
+    db.add(order)
+    db.commit()
+    
+    try:
+        # 构建回调 URL
+        base_url = settings.BASE_URL
+        success_url = f"{base_url}/?payment=success&order_id={order_id}"
+        cancel_url = f"{base_url}/?payment=cancelled"
+        
+        # 创建 Stripe Checkout Session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": package["price_cents"],
+                    "product_data": {
+                        "name": f"AI 视频积分充值 - {package['credits']} 积分",
+                        "description": f"购买 {package['credits']} 积分用于 AI 视频生成",
+                    },
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            client_reference_id=order_id,  # 关联我们的订单ID
+            metadata={
+                "order_id": order_id,
+                "user_id": str(user.id),
+                "credits": str(package["credits"]),
+            }
+        )
+        
+        return ok({
+            "checkout_url": checkout_session.url,
+            "session_id": checkout_session.id,
+            "order_id": order_id
+        })
+        
+    except stripe.error.StripeError as e:
+        print(f"[Stripe Error] {e}")
+        order.status = "failed"
+        db.add(order)
+        db.commit()
+        return fail(f"创建支付会话失败: {str(e)}")
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    """接收 Stripe Webhook 回调"""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    
+    if not settings.STRIPE_WEBHOOK_SECRET:
+        print("[Stripe Webhook] Webhook secret not configured")
+        return {"error": "Webhook secret not configured"}
+    
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        print(f"[Stripe Webhook] Invalid payload: {e}")
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError as e:
+        print(f"[Stripe Webhook] Invalid signature: {e}")
+        raise HTTPException(status_code=400, detail="Invalid signature")
+    
+    # 处理 checkout.session.completed 事件
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        order_id = session.get("client_reference_id") or session.get("metadata", {}).get("order_id")
+        
+        if order_id:
+            order = db.query(RechargeOrder).filter(RechargeOrder.id == order_id).first()
+            if order and order.status == "pending":
+                # 更新订单状态
+                order.status = "paid"
+                order.external_order_id = session.get("id")
+                order.paid_at = datetime.utcnow()
+                db.add(order)
+                
+                # 添加积分
+                credit_tx = CreditTransaction(
+                    user_id=order.user_id,
+                    delta=order.credits,
+                    reason="stripe_recharge"
+                )
+                db.add(credit_tx)
+                db.commit()
+                
+                print(f"[Stripe Webhook] Payment successful: order={order_id}, credits={order.credits}")
+            else:
+                print(f"[Stripe Webhook] Order not found or already processed: {order_id}")
+        else:
+            print(f"[Stripe Webhook] No order_id in session")
+    
+    return {"received": True}
+
+
+@app.post("/api/stripe/create-alipay-payment")
+def create_alipay_payment(
+    request: Request,
+    package_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
+    """创建支付宝支付（通过 Stripe）"""
+    if not settings.STRIPE_SECRET_KEY:
+        return fail("Stripe 支付未配置，请联系管理员")
+    
+    # 查找套餐
+    package = next((p for p in STRIPE_PACKAGES if p["id"] == package_id), None)
+    if not package:
+        return fail("无效的套餐")
+    
+    # 创建订单记录
+    order_id = f"alipay_{uuid.uuid4().hex[:16]}"
+    order = RechargeOrder(
+        id=order_id,
+        user_id=user.id,
+        amount=package["price_cents"],  # 美分
+        credits=package["credits"],
+        payment_method="alipay",
+        status="pending"
+    )
+    db.add(order)
+    db.commit()
+    
+    try:
+        # 构建回调 URL
+        base_url = settings.BASE_URL
+        return_url = f"{base_url}/?payment=success&order_id={order_id}"
+        
+        # 创建 Stripe PaymentIntent
+        payment_intent = stripe.PaymentIntent.create(
+            amount=package["price_cents"],
+            currency="usd",
+            payment_method_types=["alipay"],
+            metadata={
+                "order_id": order_id,
+                "user_id": str(user.id),
+                "credits": str(package["credits"]),
+            }
+        )
+        
+        # 保存 PaymentIntent ID
+        order.external_order_id = payment_intent.id
+        db.add(order)
+        db.commit()
+        
+        # 确认 PaymentIntent 以获取支付宝重定向 URL
+        confirmed_intent = stripe.PaymentIntent.confirm(
+            payment_intent.id,
+            payment_method_data={
+                "type": "alipay"
+            },
+            return_url=return_url
+        )
+        
+        # 获取支付宝重定向 URL
+        redirect_url = None
+        if confirmed_intent.next_action and confirmed_intent.next_action.type == "alipay_handle_redirect":
+            redirect_url = confirmed_intent.next_action.alipay_handle_redirect.url
+        elif confirmed_intent.next_action and confirmed_intent.next_action.type == "redirect_to_url":
+            redirect_url = confirmed_intent.next_action.redirect_to_url.url
+        
+        if not redirect_url:
+            return fail("无法获取支付宝支付链接")
+        
+        return ok({
+            "redirect_url": redirect_url,
+            "payment_intent_id": payment_intent.id,
+            "order_id": order_id,
+            "amount_usd": package["price_cents"] / 100,
+            "credits": package["credits"]
+        })
+        
+    except stripe.error.StripeError as e:
+        print(f"[Stripe Alipay Error] {e}")
+        order.status = "failed"
+        db.add(order)
+        db.commit()
+        return fail(f"创建支付宝支付失败: {str(e)}")
+
+
+# 微信支付套餐配置（人民币，单位：分）
+# CNY 价格约为 USD 价格的 7 倍
+WECHAT_PACKAGES = [
+    {"id": "pkg_100", "price_cny_cents": 1400, "credits": 100, "display": "¥14 = 100 积分"},
+    {"id": "pkg_500", "price_cny_cents": 6400, "credits": 500, "display": "¥64 = 500 积分"},
+    {"id": "pkg_1000", "price_cny_cents": 11500, "credits": 1000, "display": "¥115 = 1000 积分"},
+]
+
+
+@app.post("/api/stripe/create-wechat-payment")
+def create_wechat_payment(
+    request: Request,
+    package_id: str,
+    custom_amount: Optional[int] = None,  # 自定义金额（人民币元）
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
+    """创建微信支付（通过 Stripe）"""
+    if not settings.STRIPE_SECRET_KEY:
+        return fail("Stripe 支付未配置，请联系管理员")
+    
+    # 处理自定义金额或预设套餐
+    if custom_amount is not None and custom_amount > 0:
+        # 自定义金额模式: 1元 = 10积分
+        if custom_amount < 1:
+            return fail("最低充值金额为 ¥1")
+        price_cny_cents = custom_amount * 100  # 元转分
+        credits = custom_amount * 10  # 1元=10积分
+    else:
+        # 预设套餐模式
+        package = next((p for p in WECHAT_PACKAGES if p["id"] == package_id), None)
+        if not package:
+            return fail("无效的套餐")
+        price_cny_cents = package["price_cny_cents"]
+        credits = package["credits"]
+    
+    # 创建订单记录（存储人民币分数）
+    order_id = f"wechat_{uuid.uuid4().hex[:16]}"
+    order = RechargeOrder(
+        id=order_id,
+        user_id=user.id,
+        amount=price_cny_cents,  # 人民币分
+        credits=credits,
+        payment_method="wechat_pay",
+        status="pending"
+    )
+    db.add(order)
+    db.commit()
+    
+    try:
+        # 构建回调 URL
+        base_url = settings.BASE_URL
+        return_url = f"{base_url}/?payment=success&order_id={order_id}"
+        
+        # 创建 Stripe PaymentIntent (微信支付，使用 CNY)
+        payment_intent = stripe.PaymentIntent.create(
+            amount=price_cny_cents,
+            currency="cny",  # 微信支付必须使用 CNY 或 HKD
+            payment_method_types=["wechat_pay"],
+            metadata={
+                "order_id": order_id,
+                "user_id": str(user.id),
+                "credits": str(credits),
+            }
+        )
+        
+        # 保存 PaymentIntent ID
+        order.external_order_id = payment_intent.id
+        db.add(order)
+        db.commit()
+        
+        # 确认 PaymentIntent 以获取微信支付二维码
+        confirmed_intent = stripe.PaymentIntent.confirm(
+            payment_intent.id,
+            payment_method_data={
+                "type": "wechat_pay"
+            },
+            payment_method_options={
+                "wechat_pay": {
+                    "client": "web"  # 指定为 web 端
+                }
+            },
+            return_url=return_url
+        )
+        
+        # 获取微信支付二维码 URL
+        qr_code_url = None
+        if confirmed_intent.next_action:
+            if confirmed_intent.next_action.type == "wechat_pay_display_qr_code":
+                qr_code_url = confirmed_intent.next_action.wechat_pay_display_qr_code.data
+            elif confirmed_intent.next_action.type == "redirect_to_url":
+                qr_code_url = confirmed_intent.next_action.redirect_to_url.url
+        
+        if not qr_code_url:
+            return fail("无法获取微信支付二维码")
+        
+        return ok({
+            "qr_code_url": qr_code_url,
+            "payment_intent_id": payment_intent.id,
+            "order_id": order_id,
+            "amount_cny": price_cny_cents / 100,  # 返回人民币元
+            "credits": credits
+        })
+        
+    except stripe.error.StripeError as e:
+        print(f"[Stripe WeChat Error] {e}")
+        order.status = "failed"
+        db.add(order)
+        db.commit()
+        return fail(f"创建微信支付失败: {str(e)}")
+
+
+@app.get("/api/stripe/payment-status/{order_id}")
+def get_stripe_payment_status(
+    order_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> ApiResponse[dict]:
+    """查询 Stripe 支付状态（用于前端轮询）"""
+    order = db.query(RechargeOrder).filter(RechargeOrder.id == order_id).first()
+    if not order or order.user_id != user.id:
+        return fail("订单不存在")
+    
+    # 如果订单已完成，直接返回
+    if order.status == "paid":
+        return ok({
+            "status": "paid",
+            "credits": order.credits
+        })
+    
+    # 如果订单有 PaymentIntent ID，查询 Stripe 状态
+    if order.external_order_id and order.status == "pending":
+        try:
+            # 检查是否是 PaymentIntent (pi_) 还是 CheckoutSession (cs_)
+            if order.external_order_id.startswith("pi_"):
+                payment_intent = stripe.PaymentIntent.retrieve(order.external_order_id)
+                
+                if payment_intent.status == "succeeded":
+                    # 更新订单状态
+                    order.status = "paid"
+                    order.paid_at = datetime.utcnow()
+                    db.add(order)
+                    
+                    # 根据支付方式确定 reason
+                    reason = f"{order.payment_method}_recharge"
+                    
+                    # 添加积分
+                    credit_tx = CreditTransaction(
+                        user_id=order.user_id,
+                        delta=order.credits,
+                        reason=reason
+                    )
+                    db.add(credit_tx)
+                    db.commit()
+                    
+                    print(f"[Stripe] Payment successful: order={order_id}, method={order.payment_method}, credits={order.credits}")
+                    return ok({
+                        "status": "paid",
+                        "credits": order.credits
+                    })
+                elif payment_intent.status in ["canceled", "requires_payment_method"]:
+                    order.status = "failed"
+                    db.add(order)
+                    db.commit()
+                    return ok({"status": "failed"})
+                else:
+                    return ok({"status": "pending"})
+        except stripe.error.StripeError as e:
+            print(f"[Stripe Status Error] {e}")
+            return ok({"status": "pending"})
+    
+    return ok({"status": order.status})
+
+
 # Mock 支付页面
 @app.get("/mock-pay.html", response_class=HTMLResponse)
 def mock_pay_page(order_id: str, amount: float, credits: int):
@@ -854,6 +1383,21 @@ def mock_pay_confirm(order_id: str, db: Session = Depends(get_db)):
     if payment_service.mock_pay_success(order_id, db):
         return ok({"status": "paid"})
     return fail("订单不存在或已支付")
+
+
+# -------------------------------------------------------------------------
+# 静态文件缓存控制中间件
+# -------------------------------------------------------------------------
+@app.middleware("http")
+async def add_cache_control_headers(request: Request, call_next):
+    response = await call_next(request)
+    # 对 JS、CSS 和 HTML 文件禁用缓存（开发环境）
+    path = request.url.path
+    if path.endswith(('.js', '.css', '.html')) or path == '/' or path == '':
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")

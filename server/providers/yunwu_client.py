@@ -75,8 +75,8 @@ def create_sora2(
         # 强制关闭水印
         "watermark": False,
     }
-    # sora-2-pro 需要 private 字段（根据云雾API文档）
-    if model == "sora-2-pro":
+    # sora-2-pro-all 需要 private 字段（根据云雾API文档）
+    if model == "sora-2-pro-all":
         payload["private"] = False
     
     if images:
@@ -160,6 +160,7 @@ def query_task(*, api_key: str, task_id: str) -> QueryResult:
     status_mapping = {
         "success": "completed",
         "failed": "failed",
+        "failure": "failed",
         "error": "failed",
         "completed": "completed",
         "in-progress": "in-progress",

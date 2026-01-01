@@ -10,6 +10,7 @@ export const state = {
   expandedBatches: new Set(),
   batches: [],
   debug: false,
+  language: 'zh-CN',
 };
 
 export function setCurrentUser(user) {

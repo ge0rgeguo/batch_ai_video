@@ -155,12 +155,14 @@ if [[ -f "${ORIGIN_CERT_FILE}" && -f "${ORIGIN_KEY_FILE}" ]]; then
 server {
     listen 80;
     server_name ${DOMAIN};
+    client_max_body_size 20M;
     return 301 https://\$host\$request_uri;
 }
 
 server {
     listen 443 ssl http2;
     server_name ${DOMAIN};
+    client_max_body_size 20M;
 
     ssl_certificate     ${ORIGIN_CERT_FILE};
     ssl_certificate_key ${ORIGIN_KEY_FILE};

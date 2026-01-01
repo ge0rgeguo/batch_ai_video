@@ -3,12 +3,12 @@ export const AUTO_REFRESH_INTERVAL = 5000;
 export const SMS_RESEND_SECONDS = 60;
 
 export const MODEL_CONFIG = {
-  'sora-2': {
+  'sora-2-all': {
     durations: [10, 15],
     allowedSizes: ['small'],
     pricing: { 10: 10, 15: 15 },
   },
-  'sora-2-pro': {
+  'sora-2-pro-all': {
     durations: [10, 15, 25],
     allowedSizes: ['large'],
     pricing: { 10: 50, 15: 75, 25: 100 },

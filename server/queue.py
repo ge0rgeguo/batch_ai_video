@@ -88,7 +88,7 @@ class AsyncTaskExecutor:
                         task.error_summary = str(exc)[:500]
                         db.add(task)
                         # 失败退款（避免重复退款）
-                        unit_cost = get_unit_cost(task.model, int(task.duration))
+                        unit_cost = get_unit_cost(task.model, int(task.duration), task.size)
                         exists = (
                             db.query(CreditTransaction)
                             .filter(

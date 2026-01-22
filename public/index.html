@@ -5,32 +5,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="app.title">AI视频批量生成</title>
-  <link rel="stylesheet" href="/css/app.css?v=20251231-1" />
+  <link rel="stylesheet" href="/css/app.css?v=20260116-1" />
 
   <!-- Import Map for ES Module Versioning -->
   <script type="importmap">
   {
     "imports": {
-      "/js/constants.js": "/js/constants.js?v=20251231-6",
-      "/js/state.js": "/js/state.js?v=20251231-6",
-      "/js/toast.js": "/js/toast.js?v=20251231-6",
-      "/js/ui.js": "/js/ui.js?v=20251231-6",
-      "/js/credits.js": "/js/credits.js?v=20251231-6",
-      "/js/api.js": "/js/api.js?v=20251231-6",
-      "/js/i18n.js": "/js/i18n.js?v=20251231-6",
-      "/js/events.js": "/js/events.js?v=20251231-6",
-      "/js/app.js": "/js/app.js?v=20251231-6"
+      "/js/constants.js": "/js/constants.js?v=20260113-1",
+      "/js/state.js": "/js/state.js?v=20260113-1",
+      "/js/toast.js": "/js/toast.js?v=20260113-1",
+      "/js/ui.js": "/js/ui.js?v=20260113-1",
+      "/js/credits.js": "/js/credits.js?v=20260113-1",
+      "/js/api.js": "/js/api.js?v=20260113-1",
+      "/js/i18n.js": "/js/i18n.js?v=20260113-1",
+      "/js/events.js": "/js/events.js?v=20260113-1",
+      "/js/app.js": "/js/app.js?v=20260113-1"
     },
     "scopes": {
       "/js/": {
-        "./constants.js": "/js/constants.js?v=20251231-6",
-        "./state.js": "/js/state.js?v=20251231-6",
-        "./toast.js": "/js/toast.js?v=20251231-6",
-        "./ui.js": "/js/ui.js?v=20251231-6",
-        "./credits.js": "/js/credits.js?v=20251231-6",
-        "./api.js": "/js/api.js?v=20251231-6",
-        "./i18n.js": "/js/i18n.js?v=20251231-6",
-        "./events.js": "/js/events.js?v=20251231-6"
+        "./constants.js": "/js/constants.js?v=20260113-1",
+        "./state.js": "/js/state.js?v=20260113-1",
+        "./toast.js": "/js/toast.js?v=20260113-1",
+        "./ui.js": "/js/ui.js?v=20260113-1",
+        "./credits.js": "/js/credits.js?v=20260113-1",
+        "./api.js": "/js/api.js?v=20260113-1",
+        "./i18n.js": "/js/i18n.js?v=20260113-1",
+        "./events.js": "/js/events.js?v=20260113-1"
       }
     }
   }
@@ -65,17 +65,70 @@
 
     <main class="landing-main">
       <section class="hero">
-
+        <div class="hero-badge">
+          <svg class="icon-hero" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2l2.4 5 5.6.4-4.3 3.6 1.4 5.6L12 14.8 6.9 16.6l1.4-5.6-4.3-3.6 5.6-.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <span class="badge-text" data-i18n="hero.badge">Powered by Sora 2</span>
+        </div>
         <h1 data-i18n="hero.title">批量制作，高质量，无水印 AI 视频</h1>
         <p class="hero-subtitle" data-i18n="hero.subtitle">一键生成电商营销视频，支持 Sora 2 & Pro 模型</p>
         <div class="hero-actions">
-          <button class="btn btn-primary btn-xl" type="button" id="hero-login-btn" data-i18n="hero.cta">立即登录</button>
+          <button class="btn btn-primary btn-xl pulse-glow" type="button" id="hero-login-btn" data-i18n="hero.cta">立即登录</button>
+          <p class="hero-note" data-i18n="hero.note">无需信用卡 · 新用户赠送积分</p>
         </div>
       </section>
 
+      <!-- Features Section -->
+      <section class="features-section">
+        <div class="features-grid">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <h3 data-i18n="feature.batch.title">批量生成</h3>
+            <p data-i18n="feature.batch.desc">单次最多50个视频，10个任务并行处理</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 data-i18n="feature.nowatermark.title">无水印</h3>
+            <p data-i18n="feature.nowatermark.desc">商用级输出，直接用于电商投放</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <h3 data-i18n="feature.quality.title">高清画质</h3>
+            <p data-i18n="feature.quality.desc">支持720p至1080p，最长25秒视频</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <h3 data-i18n="feature.image.title">图生视频</h3>
+            <p data-i18n="feature.image.desc">上传商品图，AI自动生成动态视频</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Models Section -->
       <section class="models-section">
+        <h2 class="section-header" data-i18n="models.header">选择适合您的模型</h2>
         <div class="models-grid">
-          <article class="model-card">
+          <article class="model-card model-standard">
+            <div class="model-tier-badge">Standard</div>
             <div class="model-label" data-i18n="model.sora2.label">Sora2</div>
             <div class="model-meta">
               <span class="meta-chip">720p</span>
@@ -91,7 +144,9 @@
             </ul>
             <p class="model-note" data-i18n="model.sora2.desc">适合日常批量生成、快速复刻商品短视频。</p>
           </article>
-          <article class="model-card">
+          <article class="model-card model-pro">
+            <div class="model-tier-badge pro">Pro</div>
+            <div class="popular-badge" data-i18n="model.badge.recommended">Recommended</div>
             <div class="model-label" data-i18n="model.sora2pro.label">Sora2 Pro</div>
             <div class="model-meta">
               <span class="meta-chip">1080p</span>
@@ -109,6 +164,57 @@
           </article>
         </div>
       </section>
+
+      <!-- Stats Section -->
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number" data-count="10000">10,000+</div>
+            <div class="stat-label" data-i18n="stats.videos">视频已生成</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">99.5%</div>
+            <div class="stat-label" data-i18n="stats.success">生成成功率</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">&lt;3min</div>
+            <div class="stat-label" data-i18n="stats.speed">平均生成时间</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label" data-i18n="stats.support">全天候服务</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Section -->
+      <section class="cta-section">
+        <h2 data-i18n="cta.title">准备好开始创作了吗？</h2>
+        <p data-i18n="cta.subtitle">立即注册，免费体验AI视频生成</p>
+        <button class="btn btn-primary btn-xl" type="button" id="cta-login-btn" data-i18n="hero.cta">立即登录</button>
+      </section>
+
+      <!-- Footer -->
+      <footer class="landing-footer">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="brand-badge">Z</div>
+            <span>做视频</span>
+          </div>
+          <div class="footer-links">
+            <div class="contact-wrapper footer-contact" id="footerContactTrigger">
+              <a href="#" data-i18n="nav.contact">联系客服</a>
+              <div class="contact-popover" role="dialog" aria-hidden="true">
+                <img src="/img/contact-qr.png" alt="联系客服二维码" />
+                <span data-i18n="nav.contact.qr">微信扫码联系：齐奥至</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer-copyright">
+            <span>© 2025 做视频. All rights reserved.</span>
+          </div>
+        </div>
+      </footer>
     </main>
   </div>
 
@@ -192,11 +298,12 @@
   <div id="app-container" class="container hidden">
     <header>
       <div class="header-left">
-        <h1 style="cursor:pointer" id="nav-home-btn" data-i18n="app.header.title">🎬 AI视频批量生成</h1>
+        <h1 style="cursor:pointer" id="nav-home-btn" data-i18n="app.header.title">AI视频批量生成</h1>
       </div>
       <div class="user-info">
         <span id="user-display"></span>
         <span id="user-credits" class="text-muted clickable" title="点击充值" style="cursor:pointer"></span>
+        <button type="button" class="btn btn-secondary" id="app-lang-toggle-btn" data-i18n="lang.toggle">English/中文</button>
         <button type="button" class="btn btn-secondary" id="logout-btn" data-i18n="app.btn.logout">退出登录</button>
       </div>
     </header>
@@ -227,6 +334,7 @@
               <select id="model">
                 <option value="sora-2-all">Sora 2</option>
                 <option value="sora-2-pro-all">Sora 2 Pro</option>
+                <option value="veo_3_1">Veo 3.1</option>
               </select>
             </div>
             <div class="param-group">
@@ -255,7 +363,7 @@
         </div>
 
         <div class="generate-btn-container">
-          <button type="button" class="generate-btn" id="generate-btn" data-i18n="create.btn.generate">🎬 生成视频</button>
+          <button type="button" class="generate-btn" id="generate-btn" data-i18n="create.btn.generate">生成视频</button>
         </div>
       </div>
 
@@ -296,10 +404,10 @@
             <div class="payment-tabs" id="payment-tabs">
               <button type="button" class="payment-tab active" data-payment-type="wechat">
                 <span style="color:#07c160;font-weight:bold;margin-right:4px;">微</span>
-                微信支付
+                <span data-i18n="credits.method.wechat_full">微信支付</span>
               </button>
-              <button type="button" class="payment-tab" data-payment-type="stripe">
-                💳 信用卡
+              <button type="button" class="payment-tab" data-payment-type="stripe" data-i18n="credits.method.creditcard">
+                信用卡
               </button>
             </div>
 
@@ -307,24 +415,24 @@
             <div class="stripe-section hidden" id="stripe-payment-section">
               <div class="recharge-options" id="stripe-packages">
                 <div class="recharge-option selected" data-package-id="pkg_100">
-                  <div class="credits">100 积分</div>
+                  <div class="credits" data-i18n="credits.pkg.100">100 积分</div>
                   <div class="price">$1.99</div>
                 </div>
                 <div class="recharge-option" data-package-id="pkg_500">
-                  <div class="credits">500 积分</div>
+                  <div class="credits" data-i18n="credits.pkg.500">500 积分</div>
                   <div class="price">$8.99</div>
                   <div class="badge" data-i18n="misc.hot">热销</div>
                 </div>
                 <div class="recharge-option" data-package-id="pkg_1000">
-                  <div class="credits">1000 积分</div>
+                  <div class="credits" data-i18n="credits.pkg.1000">1000 积分</div>
                   <div class="price">$15.99</div>
                 </div>
               </div>
               <div style="text-align:center; margin-top: 20px;">
                 <button class="btn btn-primary btn-large" id="btn-stripe-pay">
-                  💳 使用 Stripe 支付 $<span id="stripe-amount-display">1.99</span>
+                  <span data-i18n="credits.stripe.pay_btn">使用 Stripe 支付</span> $<span id="stripe-amount-display">1.99</span>
                 </button>
-                <div class="tip text-muted">支持 Visa、Mastercard、American Express 等</div>
+                <div class="tip text-muted" data-i18n="credits.stripe.tip">支持 Visa、Mastercard、American Express 等</div>
               </div>
             </div>
 
@@ -333,44 +441,44 @@
             <div class="wechat-section" id="wechat-payment-section">
               <div class="recharge-options" id="wechat-packages">
                 <div class="recharge-option selected" data-package-id="pkg_100">
-                  <div class="credits">100 积分</div>
+                  <div class="credits" data-i18n="credits.pkg.100">100 积分</div>
                   <div class="price">¥14</div>
                 </div>
                 <div class="recharge-option" data-package-id="pkg_500">
-                  <div class="credits">500 积分</div>
+                  <div class="credits" data-i18n="credits.pkg.500">500 积分</div>
                   <div class="price">¥64</div>
-                  <div class="badge">推荐</div>
+                  <div class="badge" data-i18n="misc.recommended">推荐</div>
                 </div>
                 <div class="recharge-option" data-package-id="pkg_1000">
-                  <div class="credits">1000 积分</div>
+                  <div class="credits" data-i18n="credits.pkg.1000">1000 积分</div>
                   <div class="price">¥115</div>
                 </div>
                 <div class="recharge-option custom" data-package-id="pkg_custom">
-                  <div class="credits">自定义金额</div>
-                  <input type="number" id="wechat-custom-amount" placeholder="输入金额" min="1" step="1">
+                  <div class="credits" data-i18n="credits.pkg.custom">自定义金额</div>
+                  <input type="number" id="wechat-custom-amount" data-i18n="credits.placeholder.custom" placeholder="输入金额" min="1" step="1">
                 </div>
               </div>
-              <div class="tip text-muted" style="text-align:center; margin-top: 12px;">扫码支付，人民币结算（1元=10积分）</div>
+              <div class="tip text-muted" style="text-align:center; margin-top: 12px;" data-i18n="credits.wechat.tip">扫码支付，人民币结算（1元=10积分）</div>
 
               <!-- 微信支付二维码显示区域 - 默认显示 -->
               <div id="wechat-qr-container" class="qr-container">
                 <div class="qr-header" style="color: #07c160;">
-                  <span>请使用微信扫描二维码完成支付</span>
+                  <span data-i18n="credits.wechat.scan_qr">请使用微信扫描二维码完成支付</span>
                 </div>
                 <div class="qr-content">
                   <div class="qr-loading" id="wechat-qr-loading">
                     <div class="spinner" style="border-top-color: #07c160;"></div>
-                    正在生成支付二维码...
+                    <span data-i18n="credits.wechat.generating_qr">正在生成支付二维码...</span>
                   </div>
                   <img id="wechat-qr-image" class="qr-image hidden" alt="微信支付二维码">
                   <div class="qr-info">
-                    <div class="amount">支付金额: <strong>¥<span id="wechat-qr-pay-amount">14</span></strong></div>
-                    <div class="credits-info">充值积分: <strong><span id="wechat-qr-credits-amount">100</span> 积分</strong>
+                    <div class="amount"><span data-i18n="credits.wechat.pay_amount">支付金额</span>: <strong>¥<span id="wechat-qr-pay-amount">14</span></strong></div>
+                    <div class="credits-info"><span data-i18n="credits.wechat.credits_amount">充值积分</span>: <strong><span id="wechat-qr-credits-amount">100</span> <span data-i18n="credits.wechat.unit">积分</span></strong>
                     </div>
                   </div>
                 </div>
                 <div class="qr-status" id="wechat-pay-status">
-                  <span class="status-waiting">⏳ 等待支付中...</span>
+                  <span class="status-waiting">⏳ <span data-i18n="credits.wechat.waiting">等待支付中...</span></span>
                 </div>
               </div>
             </div>
@@ -403,29 +511,42 @@
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=20251231-1"></script>
+  <script type="module" src="/js/app.js?v=20260113-1"></script>
   <script>
     (function () {
       const wrapper = document.getElementById('contactTrigger');
-      if (!wrapper) return;
-      const popover = wrapper.querySelector('.contact-popover');
-      const toggle = (show) => {
-        wrapper.classList.toggle('show', show);
-        popover?.setAttribute('aria-hidden', show ? 'false' : 'true');
+      const footerWrapper = document.getElementById('footerContactTrigger');
+
+      const setupContactPopover = (el) => {
+        if (!el) return;
+        const popover = el.querySelector('.contact-popover');
+        const toggle = (show) => {
+          el.classList.toggle('show', show);
+          popover?.setAttribute('aria-hidden', show ? 'false' : 'true');
+        };
+        el.addEventListener('mouseenter', () => toggle(true));
+        el.addEventListener('mouseleave', () => toggle(false));
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          toggle(!el.classList.contains('show'));
+        });
       };
-      wrapper.addEventListener('mouseenter', () => toggle(true));
-      wrapper.addEventListener('mouseleave', () => toggle(false));
-      wrapper.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggle(!wrapper.classList.contains('show'));
+
+      setupContactPopover(wrapper);
+      setupContactPopover(footerWrapper);
+
+      document.addEventListener('click', () => {
+        wrapper?.classList.remove('show');
+        footerWrapper?.classList.remove('show');
       });
-      document.addEventListener('click', () => toggle(false));
 
       // 视图切换逻辑
       const landingContainer = document.getElementById('login-container');
       const authContainer = document.getElementById('auth-container');
       const loginBtn = document.getElementById('nav-login-btn');
       const heroLoginBtn = document.getElementById('hero-login-btn');
+      const ctaLoginBtn = document.getElementById('cta-login-btn');
       const backHomeBtn = document.getElementById('back-home-btn');
 
       const authLoginPane = document.getElementById('auth-login');
@@ -443,6 +564,7 @@
 
       loginBtn?.addEventListener('click', showLoginView);
       heroLoginBtn?.addEventListener('click', showLoginView);
+      ctaLoginBtn?.addEventListener('click', showLoginView);
       backHomeBtn?.addEventListener('click', showLandingView);
     })();
   </script>

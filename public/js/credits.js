@@ -281,12 +281,12 @@ async function generateWechatQR() {
             state.currentOrderId = res.data.order_id;
             startPaymentPolling('wechat', res.data.order_id);
         } else {
-            if (qrStatus) qrStatus.innerHTML = '<span class="status-error">❌ 生成失败，请重新选择套餐</span>';
+            if (qrStatus) qrStatus.innerHTML = '<span class="status-error">生成失败，请重新选择套餐</span>';
             qrLoading?.classList.add('hidden');
         }
     } catch (err) {
         console.error('WeChat QR generation error:', err);
-        if (qrStatus) qrStatus.innerHTML = '<span class="status-error">❌ 网络错误，请重试</span>';
+        if (qrStatus) qrStatus.innerHTML = '<span class="status-error">网络错误，请重试</span>';
         qrLoading?.classList.add('hidden');
     }
 }
@@ -409,7 +409,7 @@ function startPaymentPolling(orderId, type) {
 
             const qrStatus = document.getElementById(`${type}-pay-status`);
             if (qrStatus) {
-                qrStatus.innerHTML = '<span class="status-failed">❌ 支付超时，请重试</span>';
+                qrStatus.innerHTML = '<span class="status-failed">支付超时，请重试</span>';
             }
             return;
         }
@@ -424,7 +424,7 @@ function startPaymentPolling(orderId, type) {
                     state.pollTimer = null;
 
                     if (qrStatus) {
-                        qrStatus.innerHTML = '<span class="status-success">✅ 支付成功！</span>';
+                        qrStatus.innerHTML = '<span class="status-success">支付成功！</span>';
                     }
 
                     showToast(`支付成功！获得 ${res.data.credits} 积分`, 'success');
@@ -448,7 +448,7 @@ function startPaymentPolling(orderId, type) {
                     state.pollTimer = null;
 
                     if (qrStatus) {
-                        qrStatus.innerHTML = '<span class="status-failed">❌ 支付失败</span>';
+                        qrStatus.innerHTML = '<span class="status-failed">支付失败</span>';
                     }
                 }
             }

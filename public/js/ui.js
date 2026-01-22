@@ -82,25 +82,54 @@ export function updateDurationOptions(model) {
   const sizeSelect = selectors.sizeSelect();
   const config = MODEL_CONFIG[model] || MODEL_CONFIG['sora-2-all'];
 
+  // 更新尺寸下拉框
+  if (sizeSelect) {
+    const currentSize = sizeSelect.value;
+    sizeSelect.innerHTML = '';
+    config.allowedSizes.forEach((size) => {
+      const option = document.createElement('option');
+      option.value = size;
+      // veo_3_1 按分辨率定价
+      if (config.pricingBySize) {
+        const cost = config.pricingBySize[size] || 0;
+        option.textContent = `${size} (${cost}${t('misc.points')})`;
+      } else {
+        // sora 模型显示友好名称
+        const sizeLabels = { small: '720p', large: '1080p' };
+        option.textContent = sizeLabels[size] || size;
+      }
+      sizeSelect.appendChild(option);
+    });
+    // 保持原选择或使用默认值
+    if (config.allowedSizes.includes(currentSize)) {
+      sizeSelect.value = currentSize;
+    } else {
+      sizeSelect.value = config.defaultSize || config.allowedSizes[0];
+    }
+    sizeSelect.disabled = config.allowedSizes.length === 1;
+  }
+
+  // 更新时长下拉框
   if (durationSelect) {
     const currentValue = durationSelect.value;
     durationSelect.innerHTML = '';
     config.durations.forEach((duration) => {
       const option = document.createElement('option');
       option.value = String(duration);
-      const cost = config.pricing[duration] || 0;
-      option.textContent = `${duration}${t('misc.seconds')} (${cost}${t('misc.points')})`;
+      // veo_3_1 按尺寸定价，时长固定不显示价格
+      if (config.pricingBySize) {
+        option.textContent = `${duration}${t('misc.seconds')}`;
+      } else {
+        const cost = config.pricing[duration] || 0;
+        option.textContent = `${duration}${t('misc.seconds')} (${cost}${t('misc.points')})`;
+      }
       durationSelect.appendChild(option);
     });
     if (config.durations.includes(Number(currentValue))) {
       durationSelect.value = currentValue;
     }
-  }
-
-  if (sizeSelect) {
-    const defaultSize = config.allowedSizes[0] || 'small';
-    sizeSelect.value = defaultSize;
-    sizeSelect.disabled = config.allowedSizes.length === 1;
+    // veo_3_1 时长固定，禁用选择
+    durationSelect.disabled = config.durations.length === 1;
   }
 }
 

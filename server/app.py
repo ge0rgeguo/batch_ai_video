@@ -64,6 +64,12 @@ from authlib.integrations.starlette_client import OAuth
 
 app = FastAPI(title="Video Generation Batch API", docs_url=None, redoc_url=None)
 
+
+@app.get("/api/health")
+def health_check():
+    """健康检查端点，用于 Docker 和负载均衡器"""
+    return {"status": "ok"}
+
 # Session middleware for OAuth state (使用随机密钥，生产环境中应该固定)
 # TODO: 在生产环境中设置固定的 SESSION_SECRET 环境变量
 app.add_middleware(
@@ -549,6 +555,7 @@ def create_batch(
     # 校验模型与时长/尺寸组合
     # sora-2-all: 10s/15s, 仅 small(720p)
     # sora-2-pro-all: 10s/15s/25s, 仅 large(1080p)
+    # veo_3_1: 8s固定, 支持 720p/1080p/4k
     model_constraints = {
         "sora-2-all": {
             "durations": {10, 15},
@@ -557,6 +564,10 @@ def create_batch(
         "sora-2-pro-all": {
             "durations": {10, 15, 25},
             "allowed_sizes": {"large"},
+        },
+        "veo_3_1": {
+            "durations": {8},
+            "allowed_sizes": {"720p", "1080p", "4k"},
         },
     }
     if req.model not in model_constraints:
@@ -567,8 +578,8 @@ def create_batch(
     if req.size not in constraints["allowed_sizes"]:
         return fail(f"该模型不支持所选尺寸，支持: {sorted(constraints['allowed_sizes'])}")
 
-    # 积分：定价（按模型与时长）
-    unit_cost = get_unit_cost(req.model, req.duration)
+    # 积分：定价（按模型与时长/尺寸）
+    unit_cost = get_unit_cost(req.model, req.duration, req.size)
     total_cost = unit_cost * req.num_videos
     user_credits = _get_user_credits(db, user.id)
     if user_credits < total_cost:
@@ -658,7 +669,7 @@ def list_tasks(batch_id: str, db: Session = Depends(get_db), user: User = Depend
             db.add(t)
             changed = True
             # 超时失败退款（避免重复退款）
-            unit_cost = get_unit_cost(t.model, int(t.duration))
+            unit_cost = get_unit_cost(t.model, int(t.duration), t.size)
             exists = (
                 db.query(CreditTransaction)
                 .filter(

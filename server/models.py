@@ -154,9 +154,7 @@ class Task(Base):
 
     batch = relationship("Batch", back_populates="tasks")
 
-    __table_args__ = (
-        CheckConstraint("duration IN (5, 10, 15, 25)", name="ck_duration_values"),
-    )
+    # 时长验证在应用层进行，不使用数据库约束（便于添加新模型）
 
 
 class IdempotencyKey(Base):

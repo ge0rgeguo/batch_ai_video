@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+venv/
+colab_website_venv/
+*.egg-info/
+
+# 本地环境
+.env
+*.db
+*.db.*
+data/
+
+# 开发/测试文件
+.pytest_cache/
+*.ipynb
+colab_*
+*.bak.*
+
+# 上传和临时文件
+uploads/
+public/temp-results/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# 其他
+.claude/
+.agent/
+docs/
+deploy/
+*.md
+*.txt
+!requirements.txt

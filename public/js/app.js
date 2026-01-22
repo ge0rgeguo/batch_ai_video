@@ -96,8 +96,9 @@ async function init() {
   // Close Credits Button
   document.getElementById('close-credits-btn')?.addEventListener('click', () => switchAppView('create'));
 
-  // Language Toggle
+  // Language Toggle (both landing page and app page)
   document.getElementById('lang-toggle-btn')?.addEventListener('click', handleLanguageToggle);
+  document.getElementById('app-lang-toggle-btn')?.addEventListener('click', handleLanguageToggle);
 
   handleLoginModeChange(currentLoginMode);
   await bootstrapCurrentUser();

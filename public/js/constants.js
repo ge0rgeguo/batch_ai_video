@@ -13,6 +13,12 @@ export const MODEL_CONFIG = {
     allowedSizes: ['large'],
     pricing: { 10: 50, 15: 75, 25: 100 },
   },
+  'veo_3_1': {
+    durations: [8],
+    allowedSizes: ['720p', '1080p', '4k'],
+    defaultSize: '1080p',
+    pricingBySize: { '720p': 10, '1080p': 50, '4k': 100 },
+  },
 };
 
 export const TASK_STATUS_META = {
@@ -25,10 +31,10 @@ export const TASK_STATUS_META = {
 };
 
 export const BATCH_STATUS_META = {
-  running: { label: '🔄 进行中', className: 'status-running', color: '#3182ce' },
-  partialFailed: { label: '❌ 部分失败', className: 'status-failed', color: '#e53e3e' },
-  completed: { label: '✅ 全部完成', className: 'status-completed', color: '#38a169' },
-  queued: { label: '⏸ 待启动', className: 'status-pending', color: '#718096' },
+  running: { label: '进行中', className: 'status-running', color: '#3182ce' },
+  partialFailed: { label: '部分失败', className: 'status-failed', color: '#e53e3e' },
+  completed: { label: '全部完成', className: 'status-completed', color: '#38a169' },
+  queued: { label: '待启动', className: 'status-pending', color: '#718096' },
 };
 
 export const TOAST_DEFAULT_DURATION = 3000;

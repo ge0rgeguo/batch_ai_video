@@ -63,8 +63,12 @@ def create_sora2(
     """
     api_base = _resolve_api_base()
 
-    # Yunwu示例使用 size=large，当前项目有 small/medium 两档，映射为：
-    yunwu_size = "small" if size == "small" else "large"
+    # veo_3_1 直接使用分辨率值 (720p, 1080p, 4k)
+    # sora 模型映射: small -> small, 其他 -> large
+    if model == "veo_3_1":
+        yunwu_size = size  # 直接使用 720p, 1080p, 4k
+    else:
+        yunwu_size = "small" if size == "small" else "large"
 
     payload = {
         "model": model,

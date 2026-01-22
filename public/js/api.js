@@ -125,7 +125,7 @@ export function retryFailedTasks(batchId) {
 }
 
 export function pullUserProfile() {
-  return request('/api/me');
+  return request('/api/me', { silent: true });
 }
 
 // Stripe 支付相关 API

@@ -1720,6 +1720,50 @@ td {
   color: #c4b5fd;
 }
 
+/* Premium Model Card - Dark Gold Theme */
+.model-tier-badge.premium {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(184, 134, 11, 0.2));
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.model-card.model-premium {
+  background: #1a1a2e;
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.model-card.model-premium::before {
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+}
+
+.model-card.model-premium:hover {
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15);
+}
+
+.model-card.model-premium .model-label {
+  color: #d4af37;
+}
+
+.model-card.model-premium .meta-chip {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.25);
+  color: #d4af37;
+}
+
+.model-card.model-premium .model-params {
+  color: #a0a0b0;
+}
+
+.model-card.model-premium .model-params li::before {
+  color: #d4af37;
+}
+
+.model-card.model-premium .model-note {
+  color: #8a8a9a;
+  border-top-color: rgba(212, 175, 55, 0.2);
+}
+
 /* Stats Section */
 .stats-section {
   padding: 80px 20px;

@@ -5,32 +5,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="app.title">AI视频批量生成</title>
-  <link rel="stylesheet" href="/css/app.css?v=20260116-1" />
+  <link rel="stylesheet" href="/css/app.css?v=20260123-1" />
 
   <!-- Import Map for ES Module Versioning -->
   <script type="importmap">
   {
     "imports": {
-      "/js/constants.js": "/js/constants.js?v=20260113-1",
-      "/js/state.js": "/js/state.js?v=20260113-1",
-      "/js/toast.js": "/js/toast.js?v=20260113-1",
-      "/js/ui.js": "/js/ui.js?v=20260113-1",
-      "/js/credits.js": "/js/credits.js?v=20260113-1",
-      "/js/api.js": "/js/api.js?v=20260113-1",
-      "/js/i18n.js": "/js/i18n.js?v=20260113-1",
-      "/js/events.js": "/js/events.js?v=20260113-1",
-      "/js/app.js": "/js/app.js?v=20260113-1"
+      "/js/constants.js": "/js/constants.js?v=20260123-1",
+      "/js/state.js": "/js/state.js?v=20260123-1",
+      "/js/toast.js": "/js/toast.js?v=20260123-1",
+      "/js/ui.js": "/js/ui.js?v=20260123-1",
+      "/js/credits.js": "/js/credits.js?v=20260123-1",
+      "/js/api.js": "/js/api.js?v=20260123-1",
+      "/js/i18n.js": "/js/i18n.js?v=20260123-1",
+      "/js/events.js": "/js/events.js?v=20260123-1",
+      "/js/app.js": "/js/app.js?v=20260123-1"
     },
     "scopes": {
       "/js/": {
-        "./constants.js": "/js/constants.js?v=20260113-1",
-        "./state.js": "/js/state.js?v=20260113-1",
-        "./toast.js": "/js/toast.js?v=20260113-1",
-        "./ui.js": "/js/ui.js?v=20260113-1",
-        "./credits.js": "/js/credits.js?v=20260113-1",
-        "./api.js": "/js/api.js?v=20260113-1",
-        "./i18n.js": "/js/i18n.js?v=20260113-1",
-        "./events.js": "/js/events.js?v=20260113-1"
+        "./constants.js": "/js/constants.js?v=20260123-1",
+        "./state.js": "/js/state.js?v=20260123-1",
+        "./toast.js": "/js/toast.js?v=20260123-1",
+        "./ui.js": "/js/ui.js?v=20260123-1",
+        "./credits.js": "/js/credits.js?v=20260123-1",
+        "./api.js": "/js/api.js?v=20260123-1",
+        "./i18n.js": "/js/i18n.js?v=20260123-1",
+        "./events.js": "/js/events.js?v=20260123-1"
       }
     }
   }
@@ -69,10 +69,10 @@
           <svg class="icon-hero" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 2l2.4 5 5.6.4-4.3 3.6 1.4 5.6L12 14.8 6.9 16.6l1.4-5.6-4.3-3.6 5.6-.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
           </svg>
-          <span class="badge-text" data-i18n="hero.badge">Powered by Sora 2</span>
+          <span class="badge-text" data-i18n="hero.badge">Powered by Sora 2 & Veo 3.1</span>
         </div>
         <h1 data-i18n="hero.title">批量制作，高质量，无水印 AI 视频</h1>
-        <p class="hero-subtitle" data-i18n="hero.subtitle">一键生成电商营销视频，支持 Sora 2 & Pro 模型</p>
+        <p class="hero-subtitle" data-i18n="hero.subtitle">一键生成电商营销视频，支持 4K 超高清</p>
         <div class="hero-actions">
           <button class="btn btn-primary btn-xl pulse-glow" type="button" id="hero-login-btn" data-i18n="hero.cta">立即登录</button>
           <p class="hero-note" data-i18n="hero.note">无需信用卡 · 新用户赠送积分</p>
@@ -107,7 +107,7 @@
               </svg>
             </div>
             <h3 data-i18n="feature.quality.title">高清画质</h3>
-            <p data-i18n="feature.quality.desc">支持720p至1080p，最长25秒视频</p>
+            <p data-i18n="feature.quality.desc">支持 720p / 1080p / 4K，最长25秒视频</p>
           </div>
           <div class="feature-item">
             <div class="feature-icon">
@@ -133,14 +133,12 @@
             <div class="model-meta">
               <span class="meta-chip">720p</span>
               <span class="meta-chip">10s / 15s</span>
-              <span class="meta-chip">50 items</span>
             </div>
             <ul class="model-params">
               <li data-i18n="model.sora2.params.1">方向：横向 16:9、纵向 9:16</li>
               <li data-i18n="model.sora2.params.2">尺寸：720p</li>
               <li data-i18n="model.sora2.params.3">时长：10秒 / 15秒</li>
               <li data-i18n="model.sora2.params.4">积分：10分 / 15分</li>
-              <li data-i18n="model.sora2.params.5">批量：同时支持10个任务，单个任务支持50条</li>
             </ul>
             <p class="model-note" data-i18n="model.sora2.desc">适合日常批量生成、快速复刻商品短视频。</p>
           </article>
@@ -151,16 +149,31 @@
             <div class="model-meta">
               <span class="meta-chip">1080p</span>
               <span class="meta-chip">Max 25s</span>
-              <span class="meta-chip">50 items</span>
             </div>
             <ul class="model-params">
               <li data-i18n="model.sora2pro.params.1">方向：横向 16:9、纵向 9:16</li>
               <li data-i18n="model.sora2pro.params.2">尺寸：1080p</li>
               <li data-i18n="model.sora2pro.params.3">时长：10秒 / 15秒 / 25秒</li>
               <li data-i18n="model.sora2pro.params.4">积分：50分 / 75分 / 100分</li>
-              <li data-i18n="model.sora2pro.params.5">批量：同时支持10个任务，单个任务支持50条</li>
             </ul>
             <p class="model-note" data-i18n="model.sora2pro.desc">适合高质量投放素材、重点活动主视频等场景。</p>
+          </article>
+          <article class="model-card model-premium">
+            <div class="model-tier-badge premium">Premium</div>
+            <div class="model-label" data-i18n="model.veo31.label">Veo 3.1</div>
+            <div class="model-meta">
+              <span class="meta-chip">720p</span>
+              <span class="meta-chip">1080p</span>
+              <span class="meta-chip">4K</span>
+              <span class="meta-chip">8s</span>
+            </div>
+            <ul class="model-params">
+              <li data-i18n="model.veo31.params.1">方向：横向 16:9、纵向 9:16</li>
+              <li data-i18n="model.veo31.params.2">尺寸：720p / 1080p / 4K</li>
+              <li data-i18n="model.veo31.params.3">时长：固定 8 秒</li>
+              <li data-i18n="model.veo31.params.4">积分：10分 / 50分 / 100分</li>
+            </ul>
+            <p class="model-note" data-i18n="model.veo31.desc">适合高端品牌广告、4K画质展示。</p>
           </article>
         </div>
       </section>
@@ -442,16 +455,16 @@
               <div class="recharge-options" id="wechat-packages">
                 <div class="recharge-option selected" data-package-id="pkg_100">
                   <div class="credits" data-i18n="credits.pkg.100">100 积分</div>
-                  <div class="price">¥14</div>
+                  <div class="price">¥9.5</div>
                 </div>
                 <div class="recharge-option" data-package-id="pkg_500">
                   <div class="credits" data-i18n="credits.pkg.500">500 积分</div>
-                  <div class="price">¥64</div>
+                  <div class="price">¥45</div>
                   <div class="badge" data-i18n="misc.recommended">推荐</div>
                 </div>
                 <div class="recharge-option" data-package-id="pkg_1000">
                   <div class="credits" data-i18n="credits.pkg.1000">1000 积分</div>
-                  <div class="price">¥115</div>
+                  <div class="price">¥88</div>
                 </div>
                 <div class="recharge-option custom" data-package-id="pkg_custom">
                   <div class="credits" data-i18n="credits.pkg.custom">自定义金额</div>
@@ -511,7 +524,7 @@
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=20260113-1"></script>
+  <script type="module" src="/js/app.js?v=20260123-1"></script>
   <script>
     (function () {
       const wrapper = document.getElementById('contactTrigger');
